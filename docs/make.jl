@@ -15,6 +15,9 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Hamiltonian" => "Hamiltonian.md",
+        "Rayleigh–Ritz method" => "Rayleigh–Ritz.md",
+        "API reference" => "API.md",
     ],
 )
 
