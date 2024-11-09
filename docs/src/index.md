@@ -39,10 +39,10 @@ hamiltonian = Hamiltonian(
 The usage depends on the method. Define the basis set for the [Rayleigh–Ritz method](@ref Rayleigh–Ritz-method):
 ```math
 \begin{aligned}
-  \phi_1(r) &= \mathrm{e}^{-13.00773 r^2} \\
-  \phi_2(r) &= \mathrm{e}^{-1.962079 r^2} \\
-  \phi_3(r) &= \mathrm{e}^{-0.444529 r^2} \\
-  \phi_4(r) &= \mathrm{e}^{-0.1219492 r^2}
+  \phi_1(r) &= \mathrm{e}^{-13.00773 r^2}, \\
+  \phi_2(r) &= \mathrm{e}^{-1.962079 r^2}, \\
+  \phi_3(r) &= \mathrm{e}^{-0.444529 r^2}, \\
+  \phi_4(r) &= \mathrm{e}^{-0.1219492 r^2}.
 \end{aligned}
 ```
 ```@repl index
