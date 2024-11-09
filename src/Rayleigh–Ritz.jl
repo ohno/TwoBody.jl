@@ -74,25 +74,23 @@ end
 
 ```math
 \begin{aligned}
-   S_{ij} = \langle \phi_{i} | \phi_{j} \rangle
+   S_{ij}
+    = \langle \phi_{i} | \phi_{j} \rangle
    &= \iiint
-      \mathrm{e}^{-\alpha_i r^2}
-      \mathrm{e}^{-\alpha_j r^2}
+      \phi_{i}^*(r)
+      \phi_{j}(r)
       ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \iint
-      \sin\theta ~\mathrm{d}\theta \mathrm{d}\varphi
-      \int
-      r^{2}
-      \mathrm{e}^{-(\alpha_i + \alpha_j) r^2}
-      ~\mathrm{d}r \\
-   &= 4\pi \int
-      r^{2}
-      \mathrm{e}^{-(\alpha_i + \alpha_j) r^2}
-      ~\mathrm{d}r \\
-   &= 4\pi~ \mathrm{GGI}(2, \alpha_i + \alpha_j) \\
-   &= 4\pi \frac{\sqrt{\pi}/2}{2(\alpha_i + \alpha_j)^{3/2}} \\
+   &= \int_0^{2\pi} \mathrm{d}\varphi
+      \int_0^\pi \sin\theta ~\mathrm{d}\theta
+      \int_0^\infty r^{2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
+   &= 2\pi \times 2 \times \frac{1!!}{2^{2}} \sqrt{\frac{\pi}{a^{3}}} \\
    &= \underline{\left( \frac{\pi}{\alpha_i + \alpha_j} \right)^{3/2}}
 \end{aligned}
+```
+
+Integral Formula:
+```math
+\int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
 """
 function element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
