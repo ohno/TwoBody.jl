@@ -42,7 +42,7 @@ end
 ```
 Note: This basis is not normalized. This is only for s-wave.
 """
-@kwdef struct SimpleGaussianBasis <: Basis
+Base.@kwdef struct SimpleGaussianBasis <: Basis
   a = 1
 end
 
@@ -52,7 +52,7 @@ end
 \phi_i(r, θ, φ) = N _{il} r^l \exp(-a_i r^2) Y_l^m(θ, φ)
 ```
 """
-@kwdef struct GaussianBasis <: Basis
+Base.@kwdef struct GaussianBasis <: Basis
   a = 1
   l = 0
   m = 0
@@ -64,7 +64,7 @@ end
 \phi' = \sum_i c_i \phi_i
 ```
 """
-@kwdef struct ContractedBasis{T} <: Basis
+Base.@kwdef struct ContractedBasis{T} <: Basis
   c::Array{Number,1}
   φ::Array{T,1}
 end
