@@ -15,10 +15,10 @@ abstract type Basis end
 The basis set is the input for Rayleigh–Ritz method. You can define the basis set like this:
 ```math
 \begin{aligned}
-  \phi_1(r) &= \mathrm{e}^{-13.00773 r^2} \\
-  \phi_2(r) &= \mathrm{e}^{-1.962079 r^2} \\
-  \phi_3(r) &= \mathrm{e}^{-0.444529 r^2} \\
-  \phi_4(r) &= \mathrm{e}^{-0.1219492 r^2}
+  \phi_1(r) &= \exp(-13.00773 ~r^2), \\
+  \phi_2(r) &= \exp(-1.962079 ~r^2), \\
+  \phi_3(r) &= \exp(-0.444529 ~r^2), \\
+  \phi_4(r) &= \exp(-0.1219492 ~r^2).
 \end{aligned}
 ```
 ```@example

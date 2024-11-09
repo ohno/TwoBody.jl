@@ -36,10 +36,10 @@ hamiltonian = Hamiltonian(
 Define the basis set:
 ```math
 \begin{aligned}
-  \phi_1(r) &= \mathrm{e}^{-13.00773 r^2}, \\
-  \phi_2(r) &= \mathrm{e}^{-1.962079 r^2}, \\
-  \phi_3(r) &= \mathrm{e}^{-0.444529 r^2}, \\
-  \phi_4(r) &= \mathrm{e}^{-0.1219492 r^2}.
+  \phi_1(r) &= \exp(-13.00773 ~r^2), \\
+  \phi_2(r) &= \exp(-1.962079 ~r^2), \\
+  \phi_3(r) &= \exp(-0.444529 ~r^2), \\
+  \phi_4(r) &= \exp(-0.1219492 ~r^2).
 \end{aligned}
 ```
 ```@repl example
