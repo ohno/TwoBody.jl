@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="325pt"
+  height="300pt"
+  viewBox="0 0 325 300"
+>
+
+<!-- <rect width="325" height="300" fill="#FFFFFF"/> -->
+<circle cx="162.5" cy="150.0" r="125" stroke="#24292E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<!-- <circle cx="162.5" cy="150.0" r="27.5" fill="#CB3C33"/> -->
+<circle cx="75.87941930464794" cy="236.62058069535206" r="27.5" fill="#CB3C33"/>
+<circle cx="249.12058069535206" cy="63.37941930464794" r="27.5" fill="#4063D8"/>
+
+</svg>
