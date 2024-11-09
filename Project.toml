@@ -10,4 +10,4 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Subscripts = "2b7f82d5-8785-4f63-971e-f18ddbeb808e"
 
 [compat]
-julia = "1.1"
+julia = "^1.5"
