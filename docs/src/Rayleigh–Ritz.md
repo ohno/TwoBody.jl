@@ -26,11 +26,12 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 - \frac{1}{2} \nabla^2
 - \frac{1}{r}
 ```
-```@repl example
+```@example example
 hamiltonian = Hamiltonian(
   NonRelativisticKinetic(ℏ = 1 , m = 1),
   CoulombPotential(coefficient = -1),
 )
+nothing # hide
 ```
 
 Define the basis set:
@@ -42,13 +43,14 @@ Define the basis set:
   \phi_4(r) &= \exp(-0.1219492 ~r^2).
 \end{aligned}
 ```
-```@repl example
+```@example example
 basisset = BasisSet(
   SimpleGaussianBasis(13.00773),
   SimpleGaussianBasis(1.962079),
   SimpleGaussianBasis(0.444529),
   SimpleGaussianBasis(0.1219492),
 )
+nothing # hide
 ```
 
 You should find

@@ -29,11 +29,12 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 - \frac{1}{2} \nabla^2
 - \frac{1}{r}
 ```
-```@repl index
+```@example index
 hamiltonian = Hamiltonian(
   NonRelativisticKinetic(ℏ = 1 , m = 1),
   CoulombPotential(coefficient = -1),
 )
+nothing # hide
 ```
 
 The usage depends on the method. Define the basis set for the [Rayleigh–Ritz method](@ref Rayleigh–Ritz-method):
@@ -45,13 +46,14 @@ The usage depends on the method. Define the basis set for the [Rayleigh–Ritz m
   \phi_4(r) &= \exp(-0.1219492 ~r^2).
 \end{aligned}
 ```
-```@repl index
+```@example index
 basisset = BasisSet(
   SimpleGaussianBasis(13.00773),
   SimpleGaussianBasis(1.962079),
   SimpleGaussianBasis(0.444529),
   SimpleGaussianBasis(0.1219492),
 )
+nothing # hide
 ```
 
 You should find
