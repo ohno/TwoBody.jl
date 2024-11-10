@@ -98,6 +98,35 @@ function element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 end
 
 @doc raw"""
+`element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+
+```math
+\begin{aligned}
+  \langle \phi_{i} | mc^2 | \phi_{j} \rangle
+  &= mc^2 \langle \phi_{i} | \phi_{j} \rangle
+  &= mc^2 \iiint
+     \phi_{i}^*(r)
+     \phi_{j}(r)
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= mc^2
+     \int_0^{2\pi} \mathrm{d}\varphi
+     \int_0^\pi \sin\theta ~\mathrm{d}\theta
+     \int_0^\infty r^{2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
+  &= mc^2 \times 2\pi \times 2 \times \frac{1!!}{2^{2}} \sqrt{\frac{\pi}{a^{3}}} \\
+  &= \underline{mc^2 \left( \frac{\pi}{\alpha_i + \alpha_j} \right)^{3/2}}
+\end{aligned}
+```
+
+Integral Formula:
+```math
+  \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
+```
+"""
+function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.m * o.c^2 * (π/(SGB1.a+SGB2.a))^(3/2)
+end
+
+@doc raw"""
 `element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
@@ -218,6 +247,35 @@ function element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::Sim
 end
 
 @doc raw"""
+`element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+
+```math
+\begin{aligned}
+  \langle \phi_{i} | c | \phi_{j} \rangle
+  &= c \langle \phi_{i} | \phi_{j} \rangle
+  &= c \iiint
+     \phi_{i}^*(r)
+     \phi_{j}(r)
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= c
+     \int_0^{2\pi} \mathrm{d}\varphi
+     \int_0^\pi \sin\theta ~\mathrm{d}\theta
+     \int_0^\infty r^{2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
+  &= c \times 2\pi \times 2 \times \frac{1!!}{2^{2}} \sqrt{\frac{\pi}{a^{3}}} \\
+  &= \underline{c \left( \frac{\pi}{\alpha_i + \alpha_j} \right)^{3/2}}
+\end{aligned}
+```
+
+Integral Formula:
+```math
+  \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
+```
+"""
+function element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.constant * (π/(SGB1.a+SGB2.a))^(3/2)
+end
+
+@doc raw"""
 `element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
@@ -297,7 +355,6 @@ end
 ```
 
 Integral Formula:
-
 ```math
 \int_0^{\infty} r^{n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{\Gamma\left( \frac{n+1}{2} \right)}{2 a^{\frac{n+1}{2}}}
 ```
@@ -307,18 +364,45 @@ function element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGa
 end
 
 @doc raw"""
+`element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+
+```math
+\begin{aligned}
+  \langle \phi_{i} | \exp(-br^2) | \phi_{j} \rangle
+  &= \iiint
+     \phi_{i}^*(r)
+     \times \exp(-br^2) \times
+     \phi_{j}(r)
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \int_0^{2\pi} \mathrm{d}\varphi
+     \int_0^\pi \sin\theta ~\mathrm{d}\theta
+     \int_0^\infty r^2 \mathrm{e}^{-(b+\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
+  &= 2\pi \times 2 \times \frac{1!!}{2^{2}} \sqrt{\frac{\pi}{(b + \alpha_i + \alpha_j)^{2\cdot1+1}}} \\
+  &= \underline{\left( \frac{\pi}{b + \alpha_i + \alpha_j} \right)^{3/2}}
+\end{aligned}
+```
+
+Integral Formula:
+```math
+\int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
+```
+"""
+function element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.coefficient * (π/(o.exponent+SGB1.a+SGB2.a))^(3/2)
+end
+
+@doc raw"""
 `element(o::Hamiltonian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
 \begin{aligned}
   H_{ij}
   &= \langle \phi_{i} | \hat{H} | \phi_{j} \rangle \\
-  &= \langle \phi_{i} | \hat{T} + \hat{V} | \phi_{j} \rangle \\
-  &= \langle \phi_{i} | \hat{T} | \phi_{j} \rangle + \langle \phi_{i} | \hat{V} | \phi_{j} \rangle \\
-  &= T_{ij} + V_{ij}
+  &= \langle \phi_{i} | \sum_k \hat{o}_k | \phi_{j} \rangle \\
+  &= \sum_k \langle \phi_{i} | \hat{o}_k | \phi_{j} \rangle \\
 \end{aligned}
 ```
 """
-function element(o::Hamiltonian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return sum(element(term, SGB1, SGB2) for term in o.terms)
+function element(o::Hamiltonian, B1::Basis, B2::Basis)
+  return sum(element(term, B1, B2) for term in o.terms)
 end
