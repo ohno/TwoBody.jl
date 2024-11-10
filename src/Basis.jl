@@ -1,4 +1,4 @@
-export Basis, BasisSet, SimpleGaussianBasis, GaussianBasis, ContractedBasis
+export BasisSet, Basis, PrimitiveBasis, ContractedBasis, SimpleGaussianBasis, GaussianBasis
 
 # struct
 
@@ -6,6 +6,11 @@ export Basis, BasisSet, SimpleGaussianBasis, GaussianBasis, ContractedBasis
 `Basis` is an abstract type.
 """
 abstract type Basis end
+
+@doc raw"""
+`PrimitiveBasis <: Basis` is an abstract type.
+"""
+abstract type PrimitiveBasis <: Basis end
 
 @doc raw"""
 `BasisSet(basis1, basis2, ...)`
@@ -31,7 +36,7 @@ basisset = BasisSet(
 ```
 """
 struct BasisSet
-  basis::Array{Basis,1}
+  basis::Vector{Basis}
   BasisSet(args...) = new([args...])
 end
 
@@ -42,7 +47,7 @@ end
 ```
 Note: This basis is not normalized. This is only for s-wave.
 """
-Base.@kwdef struct SimpleGaussianBasis <: Basis
+Base.@kwdef struct SimpleGaussianBasis <: PrimitiveBasis
   a = 1
 end
 
@@ -52,7 +57,7 @@ end
 \phi_i(r, θ, φ) = N _{il} r^l \exp(-a_i r^2) Y_l^m(θ, φ)
 ```
 """
-Base.@kwdef struct GaussianBasis <: Basis
+Base.@kwdef struct GaussianBasis <: PrimitiveBasis
   a = 1
   l = 0
   m = 0
@@ -64,9 +69,9 @@ end
 \phi' = \sum_i c_i \phi_i
 ```
 """
-Base.@kwdef struct ContractedBasis{T} <: Basis
-  c::Array{Number,1}
-  φ::Array{T,1}
+struct ContractedBasis <: Basis
+  c::Vector
+  φ::Vector
 end
 
 # display
