@@ -1,9 +1,10 @@
 export solve
 
-using Printf
-using Subscripts
 using LinearAlgebra
+using Optim
+using Printf
 using SpecialFunctions
+using Subscripts
 
 @doc raw"""
 `solve(hamiltonian::Hamiltonian, basisset::BasisSet)`
@@ -14,57 +15,66 @@ This function returns the eigenvalues ``E``  and eigenvectors ``\pmb{c}`` for
 ```
 The Hamiltonian matrix is defined as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle``. The overlap matrix is defined as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``.
 """
-function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=true)
+function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
+
+  # Initialization
   nₘₐₓ = length(basisset.basis)
+
+  # Matrix Elements
   S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
   H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+
+  # Calculations
   E, C = eigen(Hermitian(H), Hermitian(S))
-  if info
+
+  # Output
+  if 0 < info
     println("\nn \tbasis function φₙ")
-    for n in 1:nₘₐₓ
+    for n in 1:min(nₘₐₓ, info)
     println("$n\t", basisset.basis[n])
     end
     println("\nn \twavefuntion ψₙ")
-    for n in 1:nₘₐₓ
+    for n in 1:min(nₘₐₓ, info)
       print("$n\t")
-      for i in 1:nₘₐₓ
+      for i in 1:min(nₘₐₓ, info)
         @printf(" %s %.6f φ%s", C[i,n]<0 ? "-" : "+", abs(C[i,n]), sub("$i"))
       end
       println()
     end
     println("\nn \tnorm, <ψ|ψ> = c' * S * c")
-    for n in 1:nₘₐₓ
+    for n in 1:min(nₘₐₓ, info)
       println("$n\t", C[:,n]' * S * C[:,n])
     end
     println("\nn \teigenvalue, E")
-    for n in 1:nₘₐₓ
+    for n in 1:min(nₘₐₓ, info)
       println("$n\t", E[n]) 
     end
     if !isempty(perturbation.terms)
       println("\nn \tperturbation")
       M = [element(perturbation, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-      for n in 1:nₘₐₓ
+      for n in 1:min(nₘₐₓ, info)
       println("$n\t", C[:,n]' * M * C[:,n])
       end
       println("\nn \teigenvalue + perturbation")
-      for n in 1:nₘₐₓ
+      for n in 1:min(nₘₐₓ, info)
           println("$n\t", E[n] + C[:,n]' * M * C[:,n])
       end
     end
     println("\nn \texpectation value of the Hamiltonian, <ψ|H|ψ> = c' * H * c")
-    for n in 1:nₘₐₓ
+    for n in 1:min(nₘₐₓ, info)
       println("$n\t", C[:,n]' * H * C[:,n])
     end
     for term in [hamiltonian.terms..., perturbation.terms...]
       println("\nn \texpectation value of $(term)")
       M = [element(term, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-      for n in 1:nₘₐₓ
+      for n in 1:min(nₘₐₓ, info)
         println("$n\t", C[:,n]' * M * C[:,n])
       end
     end
     println()
+    return (hamiltonian=hamiltonian, basisset=basisset, E=E, C=C, S=S, H=H)
   end
-  return (hamiltonian=hamiltonian, basisset=basisset, E=E, C=C, S=S, H=H)
+  return E
 end
 
 # SGEM
