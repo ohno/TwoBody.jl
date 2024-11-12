@@ -67,12 +67,15 @@ solve(hamiltonian, basisset)
 
 ```@docs; canonical=false
 TwoBody.solve
+TwoBody.optimize
 ```
 
 ## Basis Set
 
 ```@docs; canonical=false
 TwoBody.BasisSet
+TwoBody.GeometricBasisSet
+TwoBody.geometric
 ```
 
 ## Basis Functions

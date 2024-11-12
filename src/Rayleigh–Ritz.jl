@@ -1,4 +1,4 @@
-export solve
+export solve, optimize
 
 using LinearAlgebra
 using Optim
@@ -30,13 +30,13 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   # Output
   if 0 < info
     println("\nn \tbasis function φₙ")
-    for n in 1:min(nₘₐₓ, info)
+    for n in 1:nₘₐₓ
     println("$n\t", basisset.basis[n])
     end
     println("\nn \twavefuntion ψₙ")
     for n in 1:min(nₘₐₓ, info)
       print("$n\t")
-      for i in 1:min(nₘₐₓ, info)
+      for i in 1:nₘₐₓ
         @printf(" %s %.6f φ%s", C[i,n]<0 ? "-" : "+", abs(C[i,n]), sub("$i"))
       end
       println()
@@ -75,6 +75,33 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
     return (hamiltonian=hamiltonian, basisset=basisset, E=E, C=C, S=S, H=H)
   end
   return E
+end
+
+@doc raw"""
+`solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)`
+This function is a wrapper for `solve(hamiltonian::Hamiltonian, basisset::BasisSet, ...)`.
+"""
+function solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
+  if 0 < info
+    println("\n  \tgeometric progression")
+    println("type \t$(basisset.basistype)")
+    println("range\tr", sub("$(basisset.nₘᵢₙ)"), " - r", sub("$(basisset.nₘₐₓ)"))
+    println("r", sub("$(basisset.nₘᵢₙ)"), " \t", basisset.r₁)
+    println("r", sub("$(basisset.n)"  ), " \t", basisset.rₙ)
+  end
+  solve(hamiltonian, BasisSet(basisset.basis...); perturbation=perturbation, info=info)
+end
+
+@doc raw"""
+`optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())`
+This function minimizes the energy by optimizing $r_1$ and $r_n$ using Optim.jl.
+```math
+\frac{\partial E}{\partial r_1} = \frac{\partial E}{\partial r_n} = 0
+```
+"""
+function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())
+  res = Optim.optimize(x -> solve(hamiltonian, GeometricBasisSet(basisset.basistype, x..., basisset.n, nₘₐₓ=basisset.nₘₐₓ, nₘᵢₙ=basisset.nₘᵢₙ), perturbation=perturbation, info=0)[1], [basisset.r₁, basisset.rₙ], method=optimizer)
+  solve(hamiltonian, GeometricBasisSet(basisset.basistype, res.minimizer..., basisset.n, nₘₐₓ=basisset.nₘₐₓ, nₘᵢₙ=basisset.nₘᵢₙ); perturbation=perturbation, info=info)
 end
 
 # SGEM
