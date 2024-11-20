@@ -111,17 +111,17 @@ end
 
 ```math
 \begin{aligned}
-   S_{ij}
-    = \langle \phi_{i} | \phi_{j} \rangle
-   &= \iiint
-      \phi_{i}^*(r)
-      \phi_{j}(r)
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \int_0^{2\pi} \mathrm{d}\varphi
-      \int_0^\pi \sin\theta ~\mathrm{d}\theta
-      \int_0^\infty r^{2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
-   &= 2\pi \times 2 \times \frac{1!!}{2^{2}} \sqrt{\frac{\pi}{a^{3}}} \\
-   &= \underline{\left( \frac{\pi}{\alpha_i + \alpha_j} \right)^{3/2}}
+  S_{ij}
+   = \langle \phi_{i} | \phi_{j} \rangle
+  &= \iiint
+     \phi_{i}^*(r)
+     \phi_{j}(r)
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \int_0^{2\pi} \mathrm{d}\varphi
+     \int_0^\pi \sin\theta ~\mathrm{d}\theta
+     \int_0^\infty r^{2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
+  &= 2\pi \times 2 \times \frac{1!!}{2^{2}} \sqrt{\frac{\pi}{a^{3}}} \\
+  &= \underline{\left( \frac{\pi}{\alpha_i + \alpha_j} \right)^{3/2}}
 \end{aligned}
 ```
 
@@ -156,7 +156,7 @@ end
 
 Integral Formula:
 ```math
-  \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
+\int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
 """
 function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -168,61 +168,61 @@ end
 
 ```math
 \begin{aligned}
-   T_{ij} = \langle \phi_{i} | \hat{T} | \phi_{j} \rangle
-   &= \iiint
-      \mathrm{e}^{-\alpha_i r^2}
-      \left[ -\frac{\hbar^2}{2\mu} \nabla^2 \right]
-      \mathrm{e}^{-\alpha_j r^2}
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= -\frac{\hbar^2}{2\mu} \iiint
-      \mathrm{e}^{-\alpha_i r^2}
-      \left[ \nabla^2 \right]
-      \mathrm{e}^{-\alpha_j r^2}
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= -\frac{\hbar^2}{2\mu} \iiint
-      \mathrm{e}^{-\alpha_i r^2}
-      \left[ -6\alpha_j + 4\alpha_j^2 r^2 \right]
-      \mathrm{e}^{-\alpha_j r^2}
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= -\frac{\hbar^2}{2\mu} \iint
-      \sin\theta ~\mathrm{d}\theta \mathrm{d}\varphi
-      \int
-      \left[ -6\alpha_j + 4\alpha_j^2 r^2 \right]
-      r^2 \mathrm{e}^{-(\alpha_i + \alpha_j) r^2}
-      ~\mathrm{d}r \\
-   &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
-      \left[
-         -6\alpha_j   \mathrm{GGI}(2, \alpha_i + \alpha_j)
-         +4\alpha_j^2 \mathrm{GGI}(4, \alpha_i + \alpha_j)
-      \right]
-      \\
-   &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
-      \left[
-         -6\alpha_j   \frac{\Gamma\left( \frac{3}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
-         +4\alpha_j^2 \frac{\Gamma\left( \frac{5}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}}
-      \right] \\
-   &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
-      \left[
-         -6\alpha_j   \frac{ \sqrt{\pi}/2}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
-         +4\alpha_j^2 \frac{3\sqrt{\pi}/4}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}}
-      \right] \\
-   &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
-      \left[
-         \frac{\alpha_j}{\alpha_i + \alpha_j} - 1
-      \right]
-      \cdot 6 \alpha_j \cdot \frac{\sqrt{\pi}/2}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
-      \\
-   &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
-      \left[
-         - \frac{\alpha_i}{\alpha_i + \alpha_j}
-      \right]
-      \cdot 6 \alpha_j \cdot \frac{\sqrt{\pi}/2}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
-      \\
-   &= \underline{
-         -\frac{\hbar^2}{2\mu}
-         \cdot 6
-         \cdot \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
-      }
+  T_{ij} = \langle \phi_{i} | \hat{T} | \phi_{j} \rangle
+  &= \iiint
+     \mathrm{e}^{-\alpha_i r^2}
+     \left[ -\frac{\hbar^2}{2\mu} \nabla^2 \right]
+     \mathrm{e}^{-\alpha_j r^2}
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= -\frac{\hbar^2}{2\mu} \iiint
+     \mathrm{e}^{-\alpha_i r^2}
+     \left[ \nabla^2 \right]
+     \mathrm{e}^{-\alpha_j r^2}
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= -\frac{\hbar^2}{2\mu} \iiint
+     \mathrm{e}^{-\alpha_i r^2}
+     \left[ -6\alpha_j + 4\alpha_j^2 r^2 \right]
+     \mathrm{e}^{-\alpha_j r^2}
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= -\frac{\hbar^2}{2\mu} \iint
+     \sin\theta ~\mathrm{d}\theta \mathrm{d}\varphi
+     \int
+     \left[ -6\alpha_j + 4\alpha_j^2 r^2 \right]
+     r^2 \mathrm{e}^{-(\alpha_i + \alpha_j) r^2}
+     ~\mathrm{d}r \\
+  &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
+     \left[
+        -6\alpha_j   \mathrm{GGI}(2, \alpha_i + \alpha_j)
+        +4\alpha_j^2 \mathrm{GGI}(4, \alpha_i + \alpha_j)
+     \right]
+     \\
+  &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
+     \left[
+        -6\alpha_j   \frac{\Gamma\left( \frac{3}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
+        +4\alpha_j^2 \frac{\Gamma\left( \frac{5}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}}
+     \right] \\
+  &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
+     \left[
+        -6\alpha_j   \frac{ \sqrt{\pi}/2}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
+        +4\alpha_j^2 \frac{3\sqrt{\pi}/4}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}}
+     \right] \\
+  &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
+     \left[
+        \frac{\alpha_j}{\alpha_i + \alpha_j} - 1
+     \right]
+     \cdot 6 \alpha_j \cdot \frac{\sqrt{\pi}/2}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
+     \\
+  &= -\frac{\hbar^2}{2\mu} \cdot 4\pi
+     \left[
+        - \frac{\alpha_i}{\alpha_i + \alpha_j}
+     \right]
+     \cdot 6 \alpha_j \cdot \frac{\sqrt{\pi}/2}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
+     \\
+  &= \underline{
+        -\frac{\hbar^2}{2\mu}
+        \cdot 6
+        \cdot \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
+     }
 \end{aligned}
 ```
 
@@ -230,52 +230,52 @@ or
 
 ```math
 \begin{aligned}
-   T_{ij} = \langle \phi_{i} | \hat{T} | \phi_{j} \rangle
-   &= \iiint
-      \mathrm{e}^{-\alpha_i r^2}
-      \left[ -\frac{\hbar^2}{2\mu} \nabla^2 \right]
-      \mathrm{e}^{-\alpha_j r^2}
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= -\frac{\hbar^2}{2\mu} \iiint
-      \mathrm{e}^{-\alpha_i r^2}
-      \nabla^2
-      \mathrm{e}^{-\alpha_j r^2}
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \frac{\hbar^2}{2\mu} \iiint
-      \left[ \nabla \mathrm{e}^{-\alpha_i r^2} \right]
-      \left[ \nabla \mathrm{e}^{-\alpha_j r^2} \right]
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \frac{\hbar^2}{2\mu} \iiint
-      \left[ -2 \alpha_i r \mathrm{e}^{-\alpha_i r^2} \right]
-      \left[ -2 \alpha_j r \mathrm{e}^{-\alpha_j r^2} \right]
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \frac{\hbar^2}{2\mu} \cdot 4 \alpha_i \alpha_j \iiint
-      \left[ r \mathrm{e}^{-\alpha_i r^2} \right]
-      \left[ r \mathrm{e}^{-\alpha_j r^2} \right]
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \frac{\hbar^2}{2\mu}
-      \cdot 4 \alpha_i \alpha_j
-      \iint \sin\theta ~\mathrm{d}\theta \mathrm{d}\varphi
-      \int r^4
-      \mathrm{e}^{- (\alpha_i + \alpha_j) r^2}
-      ~\mathrm{d}r \\
-   &= \frac{\hbar^2}{2\mu}
-      \cdot 4 \alpha_i \alpha_j
-      \cdot 4 \pi
-      \cdot \mathrm{GGI}(4, \alpha_i + \alpha_j) \\
-   &= \frac{\hbar^2}{2\mu}
-      \cdot 4 \alpha_i \alpha_j
-      \cdot 4 \pi
-      \cdot \frac{\Gamma\left( \frac{5}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}} \\
-   &= \frac{\hbar^2}{2\mu}
-      \cdot 4 \alpha_i \alpha_j
-      \cdot 4 \pi
-      \cdot \frac{3\sqrt{\pi}/4}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}} \\
-   &= \underline{
-         \frac{\hbar^2}{2\mu}
-         \cdot 6
-         \cdot \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
-      }
+  T_{ij} = \langle \phi_{i} | \hat{T} | \phi_{j} \rangle
+  &= \iiint
+     \mathrm{e}^{-\alpha_i r^2}
+     \left[ -\frac{\hbar^2}{2\mu} \nabla^2 \right]
+     \mathrm{e}^{-\alpha_j r^2}
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= -\frac{\hbar^2}{2\mu} \iiint
+     \mathrm{e}^{-\alpha_i r^2}
+     \nabla^2
+     \mathrm{e}^{-\alpha_j r^2}
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \frac{\hbar^2}{2\mu} \iiint
+     \left[ \nabla \mathrm{e}^{-\alpha_i r^2} \right]
+     \left[ \nabla \mathrm{e}^{-\alpha_j r^2} \right]
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \frac{\hbar^2}{2\mu} \iiint
+     \left[ -2 \alpha_i r \mathrm{e}^{-\alpha_i r^2} \right]
+     \left[ -2 \alpha_j r \mathrm{e}^{-\alpha_j r^2} \right]
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \frac{\hbar^2}{2\mu} \cdot 4 \alpha_i \alpha_j \iiint
+     \left[ r \mathrm{e}^{-\alpha_i r^2} \right]
+     \left[ r \mathrm{e}^{-\alpha_j r^2} \right]
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \frac{\hbar^2}{2\mu}
+     \cdot 4 \alpha_i \alpha_j
+     \iint \sin\theta ~\mathrm{d}\theta \mathrm{d}\varphi
+     \int r^4
+     \mathrm{e}^{- (\alpha_i + \alpha_j) r^2}
+     ~\mathrm{d}r \\
+  &= \frac{\hbar^2}{2\mu}
+     \cdot 4 \alpha_i \alpha_j
+     \cdot 4 \pi
+     \cdot \mathrm{GGI}(4, \alpha_i + \alpha_j) \\
+  &= \frac{\hbar^2}{2\mu}
+     \cdot 4 \alpha_i \alpha_j
+     \cdot 4 \pi
+     \cdot \frac{\Gamma\left( \frac{5}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}} \\
+  &= \frac{\hbar^2}{2\mu}
+     \cdot 4 \alpha_i \alpha_j
+     \cdot 4 \pi
+     \cdot \frac{3\sqrt{\pi}/4}{2 (\alpha_i + \alpha_j)^{\frac{5}{2}}} \\
+  &= \underline{
+        \frac{\hbar^2}{2\mu}
+        \cdot 6
+        \cdot \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
+     }
 \end{aligned}
 ```
 """
@@ -305,7 +305,7 @@ end
 
 Integral Formula:
 ```math
-  \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
+\int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
 """
 function element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -333,9 +333,7 @@ end
 
 Integral Formula:
 ```math
-\begin{aligned}
-    \int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
-\end{aligned}
+\int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
 ```
 """
 function element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -363,9 +361,7 @@ end
 
 Integral Formula:
 ```math
-\begin{aligned}
-  \int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
-\end{aligned}
+\int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
 ```
 """
 function element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -377,17 +373,17 @@ end
 
 ```math
 \begin{aligned}
-   \langle \phi_{i} | r^n | \phi_{j} \rangle
-   &= \iiint
-      \phi_{i}^*(r)
-      \times r^n \times
-      \phi_{j}(r)
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \int_0^{2\pi} \mathrm{d}\varphi
-      \int_0^\pi \sin\theta ~\mathrm{d}\theta
-      \int_0^\infty r^{n+2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
-   &= 2\pi \times 2 \times \frac{\Gamma\left( \frac{n+3}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{n+3}{2}}} \\
-   &= \underline{2\pi\frac{\Gamma\left( \frac{n+3}{2} \right)}{(\alpha_i + \alpha_j)^{\frac{n+3}{2}}}}
+  \langle \phi_{i} | r^n | \phi_{j} \rangle
+  &= \iiint
+     \phi_{i}^*(r)
+     \times r^n \times
+     \phi_{j}(r)
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \int_0^{2\pi} \mathrm{d}\varphi
+     \int_0^\pi \sin\theta ~\mathrm{d}\theta
+     \int_0^\infty r^{n+2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
+  &= 2\pi \times 2 \times \frac{\Gamma\left( \frac{n+3}{2} \right)}{2 (\alpha_i + \alpha_j)^{\frac{n+3}{2}}} \\
+  &= \underline{2\pi\frac{\Gamma\left( \frac{n+3}{2} \right)}{(\alpha_i + \alpha_j)^{\frac{n+3}{2}}}}
 \end{aligned}
 ```
 
