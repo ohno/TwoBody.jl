@@ -317,17 +317,17 @@ end
 
 ```math
 \begin{aligned}
-   \langle \phi_{i} | r | \phi_{j} \rangle
-   &= \iiint
-      \phi_{i}^*(r)
-      \times r \times
-      \phi_{j}(r)
-      ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
-   &= \int_0^{2\pi} \mathrm{d}\varphi
-      \int_0^\pi \sin\theta ~\mathrm{d}\theta
-      \int_0^\infty r^3 \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
-   &= 2\pi \times 2 \times \frac{1!}{2 (\alpha_i + \alpha_j)^{2}} \\
-   &= \underline{\frac{2\pi}{(\alpha_i + \alpha_j)^2}}
+  \langle \phi_{i} | r | \phi_{j} \rangle
+  &= \iiint
+     \phi_{i}^*(r)
+     \times r \times
+     \phi_{j}(r)
+     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+  &= \int_0^{2\pi} \mathrm{d}\varphi
+     \int_0^\pi \sin\theta ~\mathrm{d}\theta
+     \int_0^\infty r^3 \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
+  &= 2\pi \times 2 \times \frac{1!}{2 (\alpha_i + \alpha_j)^{2}} \\
+  &= \underline{\frac{2\pi}{(\alpha_i + \alpha_j)^2}}
 \end{aligned}
 ```
 
