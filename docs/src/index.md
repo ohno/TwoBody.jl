@@ -30,7 +30,7 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 - \frac{1}{r}
 ```
 ```@example index
-hamiltonian = Hamiltonian(
+H = Hamiltonian(
   NonRelativisticKinetic(ℏ = 1 , m = 1),
   CoulombPotential(coefficient = -1),
 )
@@ -47,7 +47,7 @@ The usage depends on the method. Define the basis set for the [Rayleigh–Ritz m
 \end{aligned}
 ```
 ```@example index
-basisset = BasisSet(
+BS = BasisSet(
   SimpleGaussianBasis(13.00773),
   SimpleGaussianBasis(1.962079),
   SimpleGaussianBasis(0.444529),
@@ -63,7 +63,7 @@ E_{n=1} = -0.499278~E_\mathrm{h},
 which is amazingly good for only four basis functions according to [Thijssen(2007)](https://doi.org/10.1017/CBO9781139171397). The exact ground-state energy is ``-0.5~E_\mathrm{h}``.
 
 ```@repl index
-solve(hamiltonian, basisset)
+solve(H, BS)
 ```
 
 ## API reference
