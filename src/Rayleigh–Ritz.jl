@@ -85,9 +85,9 @@ function solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbati
   if 0 < info
     println("\n  \tgeometric progression")
     println("type \t$(basisset.basistype)")
-    println("range\tr", sub("$(basisset.nₘᵢₙ)"), " - r", sub("$(basisset.nₘₐₓ)"))
-    println("r", sub("$(basisset.nₘᵢₙ)"), " \t", basisset.r₁)
-    println("r", sub("$(basisset.n)"  ), " \t", basisset.rₙ)
+    println("range\tr", Subscripts.sub("$(basisset.nₘᵢₙ)"), " - r", Subscripts.sub("$(basisset.nₘₐₓ)"))
+    println("r", Subscripts.sub("$(basisset.nₘᵢₙ)"), " \t", basisset.r₁)
+    println("r", Subscripts.sub("$(basisset.n)"  ), " \t", basisset.rₙ)
   end
   solve(hamiltonian, BasisSet(basisset.basis...); perturbation=perturbation, info=info)
 end
@@ -393,7 +393,7 @@ Integral Formula:
 ```
 """
 function element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.coefficient * 2 * π * gamma((o.exponent+3)/2) / (SGB1.a+SGB2.a)^((o.exponent+3)/2)
+  return o.coefficient * 2 * π * SpecialFunctions.gamma((o.exponent+3)/2) / (SGB1.a+SGB2.a)^((o.exponent+3)/2)
 end
 
 @doc raw"""
