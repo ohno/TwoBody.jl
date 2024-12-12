@@ -1,10 +1,10 @@
 export solve, optimize
 
-using LinearAlgebra
-using Optim
-using Printf
-using SpecialFunctions
-using Subscripts
+import LinearAlgebra
+import Optim
+import Printf
+import SpecialFunctions
+import Subscripts
 
 @doc raw"""
 `solve(hamiltonian::Hamiltonian, basisset::BasisSet)`
@@ -25,25 +25,25 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   H = matrix(hamiltonian, basisset)
 
   # Calculations
-  E, C = eigen(Hermitian(H), Hermitian(S))
+  E, C = LinearAlgebra.eigen(H, S)
 
   # Output
   if 0 < info
     println("\nn \tbasis function φₙ")
     for n in 1:nₘₐₓ
-    println("$n\t", basisset.basis[n])
+      Printf.@printf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), basisset.basis[n])
     end
     println("\nn \twavefuntion ψₙ")
     for n in 1:min(nₘₐₓ, info)
-      print("$n\t")
+      Printf.@printf("ψ%s(r) = ", Subscripts.sub("$n"))
       for i in 1:nₘₐₓ
-        @printf(" %s %.6f φ%s", C[i,n]<0 ? "-" : "+", abs(C[i,n]), sub("$i"))
+        Printf.@printf("%s %.6fφ%s(r) ", C[i,n]<0 ? "-" : "+", abs(C[i,n]), Subscripts.sub("$i"))
       end
       println()
     end
     println("\nn \tnorm, <ψ|ψ> = c' * S * c")
     for n in 1:min(nₘₐₓ, info)
-      println("$n\t", C[:,n]' * S * C[:,n])
+      Printf.@printf("E%s = %s\n", Subscripts.sub("$n"), "$(E[n])")
     end
     println("\nn \teigenvalue, E")
     for n in 1:min(nₘₐₓ, info)
