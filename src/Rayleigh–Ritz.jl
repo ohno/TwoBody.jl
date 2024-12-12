@@ -21,8 +21,8 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   nₘₐₓ = length(basisset.basis)
 
   # Matrix Elements
-  S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-  H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  S = matrix(basisset)
+  H = matrix(hamiltonian, basisset)
 
   # Calculations
   E, C = eigen(Hermitian(H), Hermitian(S))
@@ -438,4 +438,26 @@ end
 """
 function element(o::Hamiltonian, B1::Basis, B2::Basis)
   return sum(element(term, B1, B2) for term in o.terms)
+end
+
+@doc raw"""
+`matrix(basisset::BasisSet)`
+
+This function returns the overlap matrix $\pmb{S}$.
+"""
+function matrix(basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  return LinearAlgebra.Symmetric(S)
+end
+
+@doc raw"""
+`matrix(hamiltonian::Hamiltonian, basisset::BasisSet)`
+
+This function returns the Hamiltonian matrix $\pmb{H}$.
+"""
+function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  return LinearAlgebra.Symmetric(H)
 end
