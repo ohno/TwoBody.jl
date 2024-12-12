@@ -29,11 +29,15 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
 
   # Output
   if 0 < info
-    println("\nn \tbasis function φₙ")
+    println("\n# method\n")
+    println("Rayleigh–Ritz method with $(typeof(basisset.basis[1]))")
+    println("\n# reference\n")
+    println("J. Thijssen, Computational Physics 2nd Edition (2013), https://doi.org/10.1017/CBO9781139171397")
+    println("\n# basis function\n")
     for n in 1:nₘₐₓ
       Printf.@printf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), basisset.basis[n])
     end
-    println("\nn \twavefuntion ψₙ")
+    println("\n# eigenfunction\n")
     for n in 1:min(nₘₐₓ, info)
       Printf.@printf("ψ%s(r) = ", Subscripts.sub("$n"))
       for i in 1:nₘₐₓ
@@ -41,13 +45,14 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
       end
       println()
     end
-    println("\nn \tnorm, <ψ|ψ> = c' * S * c")
+    println("\n# eigenvalue\n")
     for n in 1:min(nₘₐₓ, info)
       Printf.@printf("E%s = %s\n", Subscripts.sub("$n"), "$(E[n])")
     end
-    println("\nn \teigenvalue, E")
+    println("\n# others")
+    println("\nn \tnorm, <ψₙ|ψₙ> = cₙ' * S * cₙ")
     for n in 1:min(nₘₐₓ, info)
-      println("$n\t", E[n]) 
+      println("$n\t", C[:,n]' * S * C[:,n])
     end
     if !isempty(perturbation.terms)
       println("\nn \tperturbation")
@@ -60,9 +65,9 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
           println("$n\t", E[n] + C[:,n]' * M * C[:,n])
       end
     end
-    println("\nn \texpectation value of the Hamiltonian, <ψ|H|ψ> = c' * H * c")
+    println("\nn \terror check, |<ψₙ|H|ψₙ> - E| = |cₙ' * H * cₙ - E| = 0")
     for n in 1:min(nₘₐₓ, info)
-      println("$n\t", C[:,n]' * H * C[:,n])
+      println("$n\t", abs(C[:,n]' * H * C[:,n] - E[n]))
     end
     for term in [hamiltonian.terms..., perturbation.terms...]
       println("\nn \texpectation value of $(term)")
@@ -72,7 +77,18 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
       end
     end
     println()
-    return (hamiltonian=hamiltonian, basisset=basisset, E=E, C=C, S=S, H=H)
+    return (
+      hamiltonian = hamiltonian, 
+      perturbation = perturbation,
+      basisset = basisset,
+      nₘₐₓ = nₘₐₓ,
+      H = H,
+      S = S,
+      E = E,
+      C = C,
+      φ = [r -> TwoBody.φ(basisset.basis[n], r) for n in 1:nₘₐₓ],
+      ψ = [r -> sum(C[i,n]*TwoBody.φ(basisset.basis[i], r) for i in 1:nₘₐₓ) for n in 1:nₘₐₓ],
+    )
   end
   return E
 end
@@ -83,7 +99,7 @@ This function is a wrapper for `solve(hamiltonian::Hamiltonian, basisset::BasisS
 """
 function solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
   if 0 < info
-    println("\n  \tgeometric progression")
+    println("\n# geometric progression\n")
     println("type \t$(basisset.basistype)")
     println("range\tr", Subscripts.sub("$(basisset.nₘᵢₙ)"), " - r", Subscripts.sub("$(basisset.nₘₐₓ)"))
     println("r", Subscripts.sub("$(basisset.nₘᵢₙ)"), " \t", basisset.r₁)
