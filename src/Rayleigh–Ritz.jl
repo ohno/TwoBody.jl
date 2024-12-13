@@ -31,8 +31,8 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   if 0 < info
     println("\n# method\n")
     println("Rayleigh–Ritz method with $(typeof(basisset.basis[1]))")
-    println("\n# reference\n")
-    println("J. Thijssen, Computational Physics 2nd Edition (2013), https://doi.org/10.1017/CBO9781139171397")
+    println("J. Thijssen, Computational Physics 2nd Edition (2013)")
+    println("https://doi.org/10.1017/CBO9781139171397")
     println("\n# basis function\n")
     for n in 1:nₘₐₓ
       Printf.@printf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), basisset.basis[n])
@@ -93,6 +93,69 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   return E
 end
 
+@doc raw"""
+`function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)`
+
+This function minimizes the energy by changing the exponents of the basis functions using Optim.jl.
+```math
+\frac{\partial E}{\partial a_i} = 0
+```
+"""
+function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+
+  # optimizer & initial values
+  if 0 < info && progress
+    println("\n# optimizer\n")
+    println(optimizer)
+    println("Optim.jl")
+    println("P. K. Mogensen, A. N. Riseth, J. Open Source Softw., 3(24), 615 (2018)")
+    println("https://doi.org/10.21105/joss.00615")
+    println("\n# initial basis function\n")
+    nₘₐₓ = length(basisset.basis)
+    for n in 1:nₘₐₓ
+      Printf.@printf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), basisset.basis[n])
+    end
+    println("\n# optimization log\n")
+  end
+
+  # optimize
+  history = []
+  res = Optim.optimize(
+    x -> try
+      E = solve(
+        hamiltonian,
+        BasisSet([typeof(basisset.basis[i])(x[i]) for i in keys(basisset.basis)]...),
+        perturbation = perturbation,
+        info = 0
+      )[1]
+      if 0 < info && progress
+        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
+        push!(history, (energy=E, parameters=x))
+      end
+      E
+    catch
+      if 0 < info && progress
+        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
+        push!(history, (energy=Inf, parameters=x))
+      end
+      Inf
+    end,
+    [basisset.basis[i].a for i in keys(basisset.basis)],
+    method = optimizer,
+    options...
+  )
+
+  # final results
+  res = solve(hamiltonian, BasisSet([typeof(basisset.basis[i])(res.minimizer[i]) for i in keys(basisset.basis)]...), perturbation=perturbation, info=info)
+  return (res..., history=history)
+
+end
+
+@doc raw"""
+`solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)`
+
+This a solver for 1-basis calculations. This function returns `solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)`.
+"""
 function solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
   return solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)
 end
@@ -114,6 +177,7 @@ end
 
 @doc raw"""
 `optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())`
+
 This function minimizes the energy by optimizing $r_1$ and $r_n$ using Optim.jl.
 ```math
 \frac{\partial E}{\partial r_1} = \frac{\partial E}{\partial r_n} = 0
