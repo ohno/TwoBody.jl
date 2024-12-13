@@ -103,8 +103,11 @@ end
 @doc raw"""
 `ConstantPotential(constant=1)`
 ```math
-+ \mathrm{const.}
++ c
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `constant` | ``c`` |
 """
 Base.@kwdef struct ConstantPotential <: PotentialTerm
   constant = 1
@@ -113,8 +116,11 @@ end
 @doc raw"""
 `LinearPotential(coefficient=1)`
 ```math
-+ \mathrm{coeff.} \times r 
++ ar
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `coefficient` | ``a`` |
 """
 Base.@kwdef struct LinearPotential <: PotentialTerm
   coefficient = 1
@@ -123,8 +129,11 @@ end
 @doc raw"""
 `CoulombPotential(coefficient=1)`
 ```math
-+ \mathrm{coeff.} \times \frac{1}{r}
++ \frac{a}{r}
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `coefficient` | ``a`` |
 """
 Base.@kwdef struct CoulombPotential <: PotentialTerm
   coefficient = 1
@@ -133,8 +142,12 @@ end
 @doc raw"""
 `PowerLawPotential(coefficient=1, exponent=1)`
 ```math
-+ \mathrm{coeff.} \times r^\mathrm{expon.}
++ ar^n
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `coefficient` | ``a`` |
+| `exponent` | ``n`` |
 """
 Base.@kwdef struct PowerLawPotential <: PotentialTerm
   coefficient = 1
@@ -144,8 +157,12 @@ end
 @doc raw"""
 `GaussianPotential(coefficient=1, exponent=1)`
 ```math
-+ \mathrm{coeff.} \times \exp(- \mathrm{expon.} \times r^2)
++ a \exp(- b r^2)
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `coefficient` | ``a`` |
+| `exponent`    | ``b`` |
 """
 Base.@kwdef struct GaussianPotential <: PotentialTerm
   coefficient = 1
@@ -155,8 +172,12 @@ end
 @doc raw"""
 `ExponentialPotential(coefficient=1, exponent=1)`
 ```math
-+ \mathrm{coeff.} \times \exp(- \mathrm{expon.} \times r)
++ a \exp(- b r)
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `coefficient` | ``a`` |
+| `exponent`    | ``b`` |
 """
 Base.@kwdef struct ExponentialPotential <: PotentialTerm
   coefficient = 1
@@ -166,8 +187,12 @@ end
 @doc raw"""
 `YukawaPotential(coefficient=1, exponent=1)`
 ```math
-+ \mathrm{coeff.} \times \exp(- \mathrm{expon.} \times r) / r
++ \frac{a}{r} \exp(- b r)
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `coefficient` | ``a`` |
+| `exponent`    | ``b`` |
 """
 Base.@kwdef struct YukawaPotential <: PotentialTerm
   coefficient = 1
@@ -177,8 +202,11 @@ end
 @doc raw"""
 `DeltaPotential(coefficient=1)`
 ```math
-+ \mathrm{coeff.} \times δ(r)
++ a δ(r)
 ```
+| Arguments | Description |
+| :-- | :-- |
+| `coefficient` | ``a`` |
 """
 Base.@kwdef struct DeltaPotential <: PotentialTerm
   coefficient = 1
