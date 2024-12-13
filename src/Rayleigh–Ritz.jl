@@ -93,6 +93,10 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   return E
 end
 
+function solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
+  return solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)
+end
+
 @doc raw"""
 `solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)`
 This function is a wrapper for `solve(hamiltonian::Hamiltonian, basisset::BasisSet, ...)`.
