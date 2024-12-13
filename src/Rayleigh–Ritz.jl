@@ -309,7 +309,7 @@ end
 ```math
 \begin{aligned}
   \langle \phi_{i} | c | \phi_{j} \rangle
-  &= c \langle \phi_{i} | \phi_{j} \rangle
+  &= c \langle \phi_{i} | \phi_{j} \rangle \\
   &= c \iiint
      \phi_{i}^*(r)
      \phi_{j}(r)
@@ -467,7 +467,13 @@ This function returns the overlap matrix $\pmb{S}$.
 """
 function matrix(basisset::BasisSet)
   nₘₐₓ = length(basisset.basis)
-  S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  # S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  S = zeros(Float64, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      S[i,j] = element(basisset.basis[i], basisset.basis[j])
+    end
+  end
   return LinearAlgebra.Symmetric(S)
 end
 
@@ -478,6 +484,12 @@ This function returns the Hamiltonian matrix $\pmb{H}$.
 """
 function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
   nₘₐₓ = length(basisset.basis)
-  H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  # H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  H = zeros(Float64, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      H[i,j] = element(hamiltonian, basisset.basis[i], basisset.basis[j])
+    end
+  end
   return LinearAlgebra.Symmetric(H)
 end
