@@ -8,6 +8,16 @@ export Operator, Hamiltonian, NonRelativisticKinetic, RestEnergy, RelativisticCo
 abstract type Operator end
 
 @doc raw"""
+`PotentialTerm <: Operator` is an abstract type.
+"""
+abstract type PotentialTerm <: Operator end
+
+@doc raw"""
+`KineticTerm <: Operator` is an abstract type.
+"""
+abstract type KineticTerm <: Operator end
+
+@doc raw"""
 `Hamiltonian(operator1, operator2, ...)`
 ```math
 \hat{H} = \sum_i \hat{o}_i
@@ -39,7 +49,7 @@ end
 -\frac{\hbar^2}{2m} \nabla^2
 ```
 """
-Base.@kwdef struct NonRelativisticKinetic <: Operator
+Base.@kwdef struct NonRelativisticKinetic <: KineticTerm
   ℏ = 1
   m = 1
 end
@@ -51,7 +61,7 @@ m c^2
 ```
 Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu/Value?alphinv)) in the atomic units.
 """
-Base.@kwdef struct RestEnergy <: Operator
+Base.@kwdef struct RestEnergy <: KineticTerm
   c = 1
   m = 1
 end
@@ -72,7 +82,7 @@ The p^{2n} term of the Taylor expansion:
 ```
 Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu/Value?alphinv)) in the atomic units.
 """
-Base.@kwdef struct RelativisticCorrection <: Operator
+Base.@kwdef struct RelativisticCorrection <: KineticTerm
   c = 1
   m = 1
   n = 2
@@ -85,7 +95,7 @@ end
 ```
 Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu/Value?alphinv)) in the atomic units.
 """
-Base.@kwdef struct RelativisticKinetic <: Operator
+Base.@kwdef struct RelativisticKinetic <: KineticTerm
   c = 1
   m = 1
 end
@@ -96,7 +106,7 @@ end
 + \mathrm{const.}
 ```
 """
-Base.@kwdef struct ConstantPotential <: Operator
+Base.@kwdef struct ConstantPotential <: PotentialTerm
   constant = 1
 end
 
@@ -106,7 +116,7 @@ end
 + \mathrm{coeff.} \times r 
 ```
 """
-Base.@kwdef struct LinearPotential <: Operator
+Base.@kwdef struct LinearPotential <: PotentialTerm
   coefficient = 1
 end
 
@@ -116,7 +126,7 @@ end
 + \mathrm{coeff.} \times \frac{1}{r}
 ```
 """
-Base.@kwdef struct CoulombPotential <: Operator
+Base.@kwdef struct CoulombPotential <: PotentialTerm
   coefficient = 1
 end
 
@@ -126,7 +136,7 @@ end
 + \mathrm{coeff.} \times r^\mathrm{expon.}
 ```
 """
-Base.@kwdef struct PowerLawPotential <: Operator
+Base.@kwdef struct PowerLawPotential <: PotentialTerm
   coefficient = 1
   exponent = 1
 end
@@ -137,7 +147,7 @@ end
 + \mathrm{coeff.} \times \exp(- \mathrm{expon.} \times r^2)
 ```
 """
-Base.@kwdef struct GaussianPotential <: Operator
+Base.@kwdef struct GaussianPotential <: PotentialTerm
   coefficient = 1
   exponent = 1
 end
@@ -148,7 +158,7 @@ end
 + \mathrm{coeff.} \times \exp(- \mathrm{expon.} \times r)
 ```
 """
-Base.@kwdef struct ExponentialPotential <: Operator
+Base.@kwdef struct ExponentialPotential <: PotentialTerm
   coefficient = 1
   exponent = 1
 end
@@ -159,7 +169,7 @@ end
 + \mathrm{coeff.} \times \exp(- \mathrm{expon.} \times r) / r
 ```
 """
-Base.@kwdef struct YukawaPotential <: Operator
+Base.@kwdef struct YukawaPotential <: PotentialTerm
   coefficient = 1
   exponent = 1
 end
@@ -170,7 +180,7 @@ end
 + \mathrm{coeff.} \times δ(r)
 ```
 """
-Base.@kwdef struct DeltaPotential <: Operator
+Base.@kwdef struct DeltaPotential <: PotentialTerm
   coefficient = 1
 end
 
@@ -180,14 +190,14 @@ end
 + f(r)
 ```
 """
-Base.@kwdef struct FunctionPotential <: Operator
+Base.@kwdef struct FunctionPotential <: PotentialTerm
   f::Function
 end
 
 @doc raw"""
 `UniformGridPotential(R, V)`
 """
-Base.@kwdef struct UniformGridPotential <: Operator
+Base.@kwdef struct UniformGridPotential <: PotentialTerm
   R::StepRangeLen
   V::Array{Number,1}
 end
