@@ -135,7 +135,7 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
       E
     catch
       if 0 < info && progress
-        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
+        Printf.@printf("%.9e  %s\n", Inf, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
         push!(history, (energy=Inf, parameters=x))
       end
       Inf
