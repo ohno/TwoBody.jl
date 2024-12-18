@@ -44,6 +44,19 @@ struct Hamiltonian
 end
 
 @doc raw"""
+`Laplacian(coefficient=1)`
+```math
++ a\nabla^2
+```
+| Arguments | Symbol |
+| :-- | :-- |
+| `coefficient` | ``a`` |
+"""
+Base.@kwdef struct Laplacian <: PotentialTerm
+  coefficient = 1
+end
+
+@doc raw"""
 `NonRelativisticKinetic(ℏ=1, m=1)`
 ```math
 -\frac{\hbar^2}{2m} \nabla^2
