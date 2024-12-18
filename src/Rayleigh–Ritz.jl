@@ -321,7 +321,7 @@ end
      \cdot 6 \alpha_j \cdot \frac{\sqrt{\pi}/2}{2 (\alpha_i + \alpha_j)^{\frac{3}{2}}}
      \\
   &= \underline{
-        -\frac{\hbar^2}{2\mu}
+        \frac{\hbar^2}{2\mu}
         \cdot 6
         \cdot \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
      }
