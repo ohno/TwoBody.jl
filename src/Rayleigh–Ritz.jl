@@ -247,6 +247,24 @@ function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianB
   return o.m * o.c^2 * (π/(SGB1.a+SGB2.a))^(3/2)
 end
 
+
+@doc raw"""
+`element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+
+```math
+\begin{aligned}
+  \langle \phi_{i} | \nabla^2 | \phi_{j} \rangle
+  = \underline{
+      -6 \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
+    }
+\end{aligned}
+```
+```
+"""
+function element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return - 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
+end
+
 @doc raw"""
 `element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
