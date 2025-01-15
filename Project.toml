@@ -4,13 +4,17 @@ authors = ["Shuhei Ohno"]
 version = "0.0.7"
 
 [deps]
+ArnoldiMethod = "ec485272-7323-5ecc-a04f-4719b315124d"
+FiniteDifferenceMatrices = "a7a66f33-e7b8-47af-b618-f9b5bea05f3d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Subscripts = "2b7f82d5-8785-4f63-971e-f18ddbeb808e"
 
 [compat]
+FiniteDifferenceMatrices = "0.1.0"
 Optim = "1.9.4"
 SpecialFunctions = "2.3.1"
 Subscripts = "0.1.3"

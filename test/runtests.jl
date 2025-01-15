@@ -7,3 +7,4 @@ using SpecialFunctions
 using ForwardDiff
 
 include("Rayleigh–Ritz.jl")
+include("FDM.jl")
