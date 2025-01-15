@@ -82,7 +82,6 @@ TwoBody.geometric
 
 ```@docs; canonical=false
 TwoBody.SimpleGaussianBasis
-TwoBody.GaussianBasis
 TwoBody.ContractedBasis
 ```
 
