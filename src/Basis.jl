@@ -100,7 +100,6 @@ Base.@kwdef struct GeometricBasisSet
   n::Int
   nₘᵢₙ::Int
   nₘₐₓ::Int
-  nₘᵢₙ::Int
   basis::Vector{Basis}
   function GeometricBasisSet(basistype, r₁, rₙ, n::Int; nₘᵢₙ::Int=1, nₘₐₓ::Int=n)
     new(basistype, r₁, rₙ, n, nₘᵢₙ, nₘₐₓ, [basistype(α) for α in geometric(r₁, rₙ, n, nₘᵢₙ=nₘᵢₙ, nₘₐₓ=nₘₐₓ)])
