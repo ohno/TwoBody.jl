@@ -1,4 +1,4 @@
-export Operator, Hamiltonian, NonRelativisticKinetic, RestEnergy, RelativisticCorrection, RelativisticKinetic, ConstantPotential, LinearPotential, CoulombPotential, PowerLawPotential, GaussianPotential, ExponentialPotential, YukawaPotential, DeltaPotential, FunctionPotential, UniformGridPotential
+export Operator, Hamiltonian, getindex, NonRelativisticKinetic, RestEnergy, RelativisticCorrection, RelativisticKinetic, ConstantPotential, LinearPotential, CoulombPotential, PowerLawPotential, GaussianPotential, ExponentialPotential, YukawaPotential, DeltaPotential, FunctionPotential, UniformGridPotential
 
 # struct
 
@@ -32,7 +32,7 @@ The Hamiltonian is the input for each solver. This is an example for the non-rel
 ```
 
 ```@example
-hamiltonian = Hamiltonian(
+H = Hamiltonian(
   NonRelativisticKinetic(ℏ =1 , m = 1),
   CoulombPotential(coefficient = -1),
 )
@@ -43,6 +43,9 @@ struct Hamiltonian
   Hamiltonian(args...) = new([args...])
 end
 
+Base.getindex(H::Hamiltonian, index) = H.terms[index]
+Base.length(H::Hamiltonian) = length(H.terms)
+
 @doc raw"""
 `Laplacian(coefficient=1)`
 ```math
@@ -52,7 +55,7 @@ end
 | :-- | :-- |
 | `coefficient` | ``a`` |
 """
-Base.@kwdef struct Laplacian <: PotentialTerm
+Base.@kwdef struct Laplacian <: KineticTerm
   coefficient = 1
 end
 
@@ -118,7 +121,7 @@ end
 ```math
 + c
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `constant` | ``c`` |
 """
@@ -131,7 +134,7 @@ end
 ```math
 + ar
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
 """
@@ -144,7 +147,7 @@ end
 ```math
 + \frac{a}{r}
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
 """
@@ -157,7 +160,7 @@ end
 ```math
 + ar^n
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent` | ``n`` |
@@ -172,7 +175,7 @@ end
 ```math
 + a \exp(- b r^2)
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
@@ -187,7 +190,7 @@ end
 ```math
 + a \exp(- b r)
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
@@ -202,7 +205,7 @@ end
 ```math
 + \frac{a}{r} \exp(- b r)
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
@@ -217,7 +220,7 @@ end
 ```math
 + a δ(r)
 ```
-| Arguments | Description |
+| Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
 """
@@ -248,6 +251,7 @@ end
 Base.string(t::Operator) = "$(typeof(t))(" * join(["$(symbol)=$(getproperty(t,symbol))" for symbol in fieldnames(typeof(t))], ", ") * ")"
 Base.show(io::IO, t::Operator) = print(io, Base.string(t))
 Base.string(H::Hamiltonian) = "Hamiltonian(" * join(["$(term)" for term in H.terms], ", ") * ")"
+# Base.string(H::Hamiltonian) = "Hamiltonian(\n" * join(["  $(term)" for term in H.terms], ",\n") * ",\n)"
 Base.show(io::IO, H::Hamiltonian) = print(io, Base.string(H))
 
 # function
