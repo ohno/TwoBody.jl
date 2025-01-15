@@ -27,7 +27,7 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   # Calculations
   E, C = LinearAlgebra.eigen(H, S)
 
-  # Output
+  # Print
   if 0 < info
     println("\n# method\n")
     println("Rayleigh–Ritz method with $(typeof(basisset.basis[1]))")
@@ -77,6 +77,10 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
       end
     end
     println()
+  end
+
+  # Return
+  if 0 ≤ info
     return (
       hamiltonian = hamiltonian, 
       perturbation = perturbation,
@@ -89,8 +93,11 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
       φ = [r -> TwoBody.φ(basisset.basis[n], r) for n in 1:nₘₐₓ],
       ψ = [r -> sum(C[i,n]*TwoBody.φ(basisset.basis[i], r) for i in 1:nₘₐₓ) for n in 1:nₘₐₓ],
     )
+  else
+    return (
+      E = E,
+    )
   end
-  return E
 end
 
 @doc raw"""
@@ -104,10 +111,9 @@ This function minimizes the energy by changing the exponents of the basis functi
 function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 
   # optimizer & initial values
-  if 0 < info && progress
+  if 0 < info
     println("\n# optimizer\n")
     println(optimizer)
-    println("Optim.jl")
     println("P. K. Mogensen, A. N. Riseth, J. Open Source Softw., 3(24), 615 (2018)")
     println("https://doi.org/10.21105/joss.00615")
     println("\n# initial basis function\n")
@@ -115,6 +121,8 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
     for n in 1:nₘₐₓ
       Printf.@printf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), basisset.basis[n])
     end
+  end
+  if 0 < info && progress
     println("\n# optimization log\n")
   end
 
@@ -126,17 +134,21 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
         hamiltonian,
         BasisSet([typeof(basisset.basis[i])(x[i]) for i in keys(basisset.basis)]...),
         perturbation = perturbation,
-        info = 0
-      )[1]
-      if 0 < info && progress
-        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
+        info = -1
+      ).E[1]
+      if 0 ≤ info
         push!(history, (energy=E, parameters=x))
       end
-      E
+      if 0 < info && progress
+        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
+      end
+    E
     catch
+      if 0 ≤ info
+        push!(history, (energy=Inf, parameters=x))
+      end
       if 0 < info && progress
         Printf.@printf("%.9e  %s\n", Inf, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
-        push!(history, (energy=Inf, parameters=x))
       end
       Inf
     end,
@@ -147,7 +159,11 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
 
   # final results
   res = solve(hamiltonian, BasisSet([typeof(basisset.basis[i])(res.minimizer[i]) for i in keys(basisset.basis)]...), perturbation=perturbation, info=info)
-  return (res..., history=history)
+  if 0 ≤ info
+    return (res..., history=history)
+  else
+    return res
+  end
 
 end
 
@@ -156,12 +172,22 @@ end
 
 This a solver for 1-basis calculations. This function returns `solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)`.
 """
-function solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
+function solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
   return solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)
 end
 
 @doc raw"""
+`optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())`
+
+This a optimizer for 1-basis calculations. This function returns `optimize(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info, progress=progress, optimizer=optimizer, options...)`.
+"""
+function optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=1, progress=true, optimizer=Optim.NelderMead(), options...)
+  return optimize(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info, progress=progress, optimizer=optimizer, options...)
+end
+
+@doc raw"""
 `solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)`
+
 This function is a wrapper for `solve(hamiltonian::Hamiltonian, basisset::BasisSet, ...)`.
 """
 function solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
@@ -183,9 +209,61 @@ This function minimizes the energy by optimizing $r_1$ and $r_n$ using Optim.jl.
 \frac{\partial E}{\partial r_1} = \frac{\partial E}{\partial r_n} = 0
 ```
 """
-function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())
-  res = Optim.optimize(x -> solve(hamiltonian, GeometricBasisSet(basisset.basistype, x..., basisset.n, nₘₐₓ=basisset.nₘₐₓ, nₘᵢₙ=basisset.nₘᵢₙ), perturbation=perturbation, info=0)[1], [basisset.r₁, basisset.rₙ], method=optimizer)
-  solve(hamiltonian, GeometricBasisSet(basisset.basistype, res.minimizer..., basisset.n, nₘₐₓ=basisset.nₘₐₓ, nₘᵢₙ=basisset.nₘᵢₙ); perturbation=perturbation, info=info)
+function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+
+  # optimizer & initial values
+  if 0 < info && progress
+    println("\n# optimizer\n")
+    println(optimizer)
+    println("P. K. Mogensen, A. N. Riseth, J. Open Source Softw., 3(24), 615 (2018)")
+    println("https://doi.org/10.21105/joss.00615")
+    println("\n# initial geometric progression\n")
+    println("type \t$(basisset.basistype)")
+    println("range\tr", Subscripts.sub("$(basisset.nₘᵢₙ)"), " - r", Subscripts.sub("$(basisset.nₘₐₓ)"))
+    println("r", Subscripts.sub("$(basisset.nₘᵢₙ)"), " \t", basisset.r₁)
+    println("r", Subscripts.sub("$(basisset.n)"  ), " \t", basisset.rₙ)
+    println("\n# optimization log\n")
+  end
+
+  # optimize
+  history = []
+  res = Optim.optimize(
+    x -> try
+      E = solve(
+        hamiltonian,
+        GeometricBasisSet(basisset.basistype, x..., basisset.n, nₘₐₓ=basisset.nₘₐₓ, nₘᵢₙ=basisset.nₘᵢₙ),
+        perturbation = perturbation,
+        info = -1
+      ).E[1]
+      if 0 ≤ info
+        push!(history, (energy=E, parameters=x))
+      end
+      if 0 < info && progress
+        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%+.3e", x[i]) for i in keys(x)], ", ") *"]")
+      end
+    E
+    catch
+      if 0 ≤ info
+        push!(history, (energy=Inf, parameters=x))
+      end
+      if 0 < info && progress
+        Printf.@printf("%.9e  %s\n", Inf, "[" * join([Printf.@sprintf("%+.3e", x[i]) for i in keys(x)], ", ") *"]")
+      end
+      Inf
+    end,
+    [basisset.r₁, basisset.rₙ],
+    method = optimizer,
+    options...
+  )
+
+  # final results
+  res = solve(hamiltonian, GeometricBasisSet(basisset.basistype, res.minimizer..., basisset.n, nₘₐₓ=basisset.nₘₐₓ, nₘᵢₙ=basisset.nₘᵢₙ); perturbation=perturbation, info=info)
+  if 0 ≤ info
+    return (res..., history=history)
+  else
+    return res
+  end
+
 end
 
 # SGEM
@@ -197,10 +275,17 @@ end
 \begin{aligned}
   S_{ij}
    = \langle \phi_{i} | \phi_{j} \rangle
-  &= \iiint
+  &= \int
      \phi_{i}^*(r)
      \phi_{j}(r)
-     ~r^2 \sin\theta ~\mathrm{d}r \mathrm{d}\theta \mathrm{d}\varphi \\
+     \mathrm{d} \pmb{r} \\
+  &= \iiint
+     \mathrm{e}^{-\alpha_i r^2}
+     \mathrm{e}^{-\alpha_j r^2}
+     ~r^2 \sin\theta ~
+     \mathrm{d} r
+     \mathrm{d} \theta
+     \mathrm{d} \varphi \\
   &= \int_0^{2\pi} \mathrm{d}\varphi
      \int_0^\pi \sin\theta ~\mathrm{d}\theta
      \int_0^\infty r^{2} \mathrm{e}^{-(\alpha_i + \alpha_j) r^2} ~\mathrm{d}r \\
@@ -224,7 +309,7 @@ end
 ```math
 \begin{aligned}
   \langle \phi_{i} | mc^2 | \phi_{j} \rangle
-  &= mc^2 \langle \phi_{i} | \phi_{j} \rangle
+  &= mc^2 \langle \phi_{i} | \phi_{j} \rangle \\
   &= mc^2 \iiint
      \phi_{i}^*(r)
      \phi_{j}(r)
