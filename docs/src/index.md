@@ -66,20 +66,24 @@ which is amazingly good for only four basis functions according to [Thijssen(200
 solve(H, BS)
 ```
 
+The wave function is also good. However, the Gaussian basis does not satisfy [the Kato’s cusp condition](https://doi.org/10.1002/cpa.3160100201).
+
 ```@example index
+# solve
 res = solve(H, BS, info=0)
 
+# benchmark
 import Antique
 HA = Antique.HydrogenAtom(Z=1, Eₕ=1.0, a₀=1.0, mₑ=1.0, ℏ=1.0)
 
+# plot
 using CairoMakie
 fig = Figure(size=(420,300), fontsize=11.5, backgroundcolor=:transparent)
 axis = Axis(fig[1,1], xlabel=L"$r / a_0$", ylabel=L"$\psi(r) / a_0^{-3/2}$", ylabelsize=16.5, xlabelsize=16.5, limits=(0,4,0,1.1/sqrt(π)))
 lines!(axis, 0..5, r -> abs(res.ψ[1](r)), label="TwoBody.jl")
 lines!(axis, 0..5, r -> abs(Antique.ψ(HA,r,0,0)), linestyle=:dash, color=:black, label="Antique.jl")
 axislegend(axis, position=:rt, framevisible=false)
-save("index.svg", fig)
-fig # hide
+fig
 ```
 
 ## API reference
