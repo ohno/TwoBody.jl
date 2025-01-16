@@ -37,7 +37,7 @@ H = Hamiltonian(
 nothing # hide
 ```
 
-The usage depends on the method. Define the basis set for the [Rayleigh–Ritz method](@ref Rayleigh–Ritz-method):
+The usage depends on the method. Define the basis set for the [Rayleigh–Ritz Method](@ref Rayleigh–Ritz-Method):
 ```math
 \begin{aligned}
   \phi_1(r) &= \exp(-13.00773 ~r^2), \\
@@ -64,6 +64,22 @@ which is amazingly good for only four basis functions according to [Thijssen(200
 
 ```@repl index
 solve(H, BS)
+```
+
+```@example index
+res = solve(H, BS, info=0)
+
+import Antique
+HA = Antique.HydrogenAtom(Z=1, Eₕ=1.0, a₀=1.0, mₑ=1.0, ℏ=1.0)
+
+using CairoMakie
+fig = Figure(size=(420,300), fontsize=11.5, backgroundcolor=:transparent)
+axis = Axis(fig[1,1], xlabel=L"$r / a_0$", ylabel=L"$\psi(r) / a_0^{-3/2}$", ylabelsize=16.5, xlabelsize=16.5, limits=(0,4,0,1.1/sqrt(π)))
+lines!(axis, 0..5, r -> abs(res.ψ[1](r)), label="TwoBody.jl")
+lines!(axis, 0..5, r -> abs(Antique.ψ(HA,r,0,0)), linestyle=:dash, color=:black, label="Antique.jl")
+axislegend(axis, position=:rt, framevisible=false)
+save("index.svg", fig)
+fig # hide
 ```
 
 ## API reference
