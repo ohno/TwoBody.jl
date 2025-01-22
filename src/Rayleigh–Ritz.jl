@@ -630,7 +630,7 @@ end
 @doc raw"""
 `matrix(basisset::BasisSet)`
 
-This function returns the overlap matrix $\pmb{S}$.
+This function returns the overlap matrix $\pmb{S}$. The element is written as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``.
 """
 function matrix(basisset::BasisSet)
   nₘₐₓ = length(basisset.basis)
@@ -647,7 +647,7 @@ end
 @doc raw"""
 `matrix(hamiltonian::Hamiltonian, basisset::BasisSet)`
 
-This function returns the Hamiltonian matrix $\pmb{H}$.
+This function returns the Hamiltonian matrix $\pmb{H}$. The element is written as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle``.
 """
 function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
   nₘₐₓ = length(basisset.basis)

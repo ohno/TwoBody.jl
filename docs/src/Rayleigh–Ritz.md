@@ -4,15 +4,19 @@ CurrentModule = TwoBody
 
 # Rayleigh–Ritz Method
 
-The solver finds the best $c_i$ for the trial wavefunction
+This method is one of the variational method. It solves the generalized eigenvalue problem,
 ```math
-\varPsi(r) = \sum_i c_i \phi_i(r),
+\pmb{H} \pmb{c} = E \pmb{S} \pmb{c}.
 ```
-to minmize the expectation value of the energy
+The Hamiltonian matrix is defined as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle`` and the overlap matrix is defined as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``. The eigenvector ``\pmb{c}`` is the column of the optimal coefficients $c_i$ for the linear combination,
+```math
+\psi(r) = \sum_i c_i \phi_i(r),
+```
+to minmize the expectation value of the energy,
 ```math
 E = \frac{\langle\psi|\hat{H}|\psi\rangle}{\langle\psi|\psi\rangle}.
 ```
-Here, the energy by trial wavefunction is the upper bound for the exact energy.
+Note that the nonlinear parameters (e.g., exponents of the Gaussian basis functions) are not optimized. The expectation by trial wavefunction is the upper bound for the exact energy.
 
 ## Examples
 
@@ -28,6 +32,7 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 - \frac{1}{2} \nabla^2
 - \frac{1}{r}
 ```
+
 ```@example example
 H = Hamiltonian(
   NonRelativisticKinetic(ℏ = 1 , m = 1),
@@ -37,6 +42,7 @@ nothing # hide
 ```
 
 Define the basis set:
+
 ```math
 \begin{aligned}
   \phi_1(r) &= \exp(-13.00773 ~r^2), \\
@@ -55,7 +61,7 @@ BS = BasisSet(
 nothing # hide
 ```
 
-You should find
+Solve the eigenvalue problem. You should find
 ```math
 E_{n=1} = -0.499278~E_\mathrm{h},
 ```
@@ -107,8 +113,12 @@ fig
 ## Solver
 
 ```@docs; canonical=false
-TwoBody.solve
-TwoBody.optimize
+solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
+solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
+solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
+optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=1, progress=true, optimizer=Optim.NelderMead(), options...)
+optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 ```
 
 ## Basis Set
@@ -116,7 +126,7 @@ TwoBody.optimize
 ```@docs; canonical=false
 TwoBody.BasisSet
 TwoBody.GeometricBasisSet
-TwoBody.geometric
+TwoBody.geometric(r₁, rₙ, n::Int; nₘₐₓ::Int=n, nₘᵢₙ::Int=1)
 ```
 
 ## Basis Functions
@@ -126,8 +136,24 @@ TwoBody.SimpleGaussianBasis
 TwoBody.ContractedBasis
 ```
 
+## Matrix
+
+```@docs; canonical=false
+matrix(basisset::BasisSet)
+matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
+```
+
 ## Matrix Elements
 
 ```@docs; canonical=false
-TwoBody.element
+element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Hamiltonian, B1::Basis, B2::Basis)
+element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 ```
