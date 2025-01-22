@@ -4,10 +4,38 @@ CurrentModule = TwoBody
 
 # Finite Difference Method
 
+This method solve the eigenvalue problem for the Hamiltonian discretized as a sparse matrix with finite difference approximation,
+```math
+\pmb{H} \pmb{\psi} = E \pmb{\psi}.
+```
+The eigenvalue ``E`` is an approximation of the exact energy and the eigenvector ``\pmb{\psi}`` is a vector of the approximated values of the exact wavefunction ``\psi(r)`` on points of the grid,
+```math
+\pmb{\psi}
+=
+\left(\begin{array}{c}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \vdots \\
+\end{array}\right).
+```
+A uniform grid spacing is used, ``r_{i+1} = r_{i} + \Delta r``. See the API reference for the expression of the matrix ``\pmb{H}``.
+
+## Examples
+
+Run the following code before each use.
+
 ```@example example
 using TwoBody
 ```
 
+Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-relativistic Hamiltonian of hydrogen atom in atomic units:
+
+```math
+\hat{H} = 
+- \frac{1}{2} \nabla^2
+- \frac{1}{r}
+```
 ```@example example
 H = Hamiltonian(
   NonRelativisticKinetic(ℏ = 1 , m = 1),
@@ -15,6 +43,8 @@ H = Hamiltonian(
 )
 nothing # hide
 ```
+
+Set the calculation options.
 
 ```@example example
 FDM = FiniteDifferenceMethod(
@@ -27,9 +57,22 @@ FDM = FiniteDifferenceMethod(
 nothing # hide
 ```
 
+Solve the eigenvalue problem. You should find reasonable approximations to [the exact eigenvalues](https://ohno.github.io/Antique.jl/stable/HydrogenAtom/#Antique.E-Tuple{HydrogenAtom}-HydrogenAtom):
+```math
+\begin{aligned}
+  E_{n=1} &= -0.5,\\
+  E_{n=2} &= -0.125,\\
+  E_{n=3} &= -0.05555\cdots,\\
+  E_{n=4} &= -0.03125.
+\end{aligned}
+```
+By default the eigenvalues and the expectation values are displayed.
+
 ```@repl example
 solve(H, FDM)
 ```
+
+Here is a comprehensive example including calculations up to excited states.
 
 ```@example example
 # solve
@@ -68,4 +111,15 @@ for n in 1:4
   axislegend(axis, "n = $n", position=:rt, framevisible=false)
 end
 fig
+```
+
+## API
+
+```@docs; canonical=false
+TwoBody.FiniteDifferenceMethod
+TwoBody.solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod)
+TwoBody.matrix(o::Hamiltonian, method::FiniteDifferenceMethod)
+TwoBody.matrix(o::RestEnergy, method::FiniteDifferenceMethod)
+TwoBody.matrix(o::NonRelativisticKinetic, method::FiniteDifferenceMethod)
+TwoBody.matrix(o::PotentialTerm, method::FiniteDifferenceMethod)
 ```
