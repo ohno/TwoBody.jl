@@ -7,13 +7,25 @@ import LinearAlgebra
 import Subscripts
 import Printf
 
+@doc raw"""
+`FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=50.0, R=Δr:Δr:rₘₐₓ, l=0, direction=:c, solver=:LinearAlgebra)`
+
+| Arguments | Symbol |
+| :-------- | :----- |
+| `Δr::Real         ` | Radial grid spacing. A uniform grid spacing is used, ``r_{i+1} = r_{i} + \Delta r``. |
+| `rₘₐₓ::Real       ` | This value is not directly used in the calculation, but it is used to determine the `R`. |
+| `R::StepRangeLen  ` | Radial grid |
+| `l::Int           ` | Angular momentum quantum number |
+| `direction::Symbol` | `:c` for central, :f for forward, `:b` for backward |
+| `solver::Symbol   ` | `:LinearAlgebra` or `:ArnoldiMethod` |
+"""
 struct FiniteDifferenceMethod
-  Δr::Real          # Radial grid spacing
-  rₘₐₓ::Real        # This value is not directly used in the calculation, but it is used to determine the `R`.
-  R::StepRangeLen   # Radial grid
-  l::Int            # Angular momentum quantum number
-  direction::Symbol # :c for central, :f for forward, :b for backward
-  solver::Symbol    # :ArnoldiMethod or :LinearAlgebra
+  Δr::Real
+  rₘₐₓ::Real
+  R::StepRangeLen
+  l::Int
+  direction::Symbol
+  solver::Symbol
   function FiniteDifferenceMethod(;Δr=0.1, rₘₐₓ=50.0, R=Δr:Δr:rₘₐₓ, l=0, direction=:c, solver=:LinearAlgebra)
     new(Δr, rₘₐₓ, R, l, direction, solver)
   end
@@ -22,24 +34,203 @@ end
 Base.string(method::FiniteDifferenceMethod) = "FiniteDifferenceMethod(" * join(["$(symbol)=$(getproperty(method,symbol))" for symbol in fieldnames(typeof(method))], ", ") * ")"
 Base.show(io::IO, method::FiniteDifferenceMethod) = print(io, Base.string(method))
 
+@doc raw"""
+`matrix(o::Hamiltonian, method::FiniteDifferenceMethod)`
+
+The matrix for the Hamiltonian is a sum of matrices for each term,
+
+```math
+\pmb{H} = \sum_i \pmb{O}_i.
+```
+"""
 function matrix(o::Hamiltonian, method::FiniteDifferenceMethod)
   return sum(matrix(term, method) for term in o.terms)
 end
 
+@doc raw"""
+`matrix(o::RestEnergy, method::FiniteDifferenceMethod)`
+
+The matrix for the rest energy ``mc^2`` is a diagonal matrix,
+
+```math
+mc^2
+\left(\begin{array}{ccccccc}
+  1 & 0 & 0 & \ldots \\
+  0 & 1 & 0 & \ldots \\
+  0 & 0 & 1 & \ldots \\
+  \vdots & \vdots & \vdots & \ddots \\
+\end{array}\right).
+```
+"""
 function matrix(o::RestEnergy, method::FiniteDifferenceMethod)
   return SparseArrays.spdiagm([o.m * o.c^2 for r in method.R])
 end
 
+@doc raw"""
+`matrix(o::NonRelativisticKinetic, method::FiniteDifferenceMethod)`
+
+We use the shorthand notation $\psi'(r) = \frac{\mathrm{d}\psi}{\mathrm{d}r}(r)$ and $\psi''(r) = \frac{\mathrm{d}^{2}\psi}{\mathrm{d}r^{2}}(r)$. For the uniform grid spacing ($r_{i+1} = r_{i} + \Delta r$), the finite difference for the first derivative,
+
+```math
+\frac{\mathrm{d}\psi}{\mathrm{d}r}(r) = \frac{\psi(r+\Delta r) - \psi(r-\Delta r)}{2\Delta r} + O(\Delta r^{2})
+```
+
+is written as
+
+```math
+\left(\begin{array}{ccccc}
+  \psi'(r_1) \\
+  \psi'(r_2) \\
+  \psi'(r_3) \\
+  \psi'(r_4) \\
+  \vdots
+\end{array}\right)
+\simeq
+\frac{1}{2\Delta r}
+\left(\begin{array}{ccccc}
+   0 &  1 &  0 &  0 &\ldots \\
+  -1 &  0 &  1 &  0 &\ldots \\
+   0 & -1 &  0 &  1 &\ldots \\
+   0 &  0 & -1 &  0 &\ldots \\
+  \vdots & \vdots & \vdots & \vdots & \ddots \\
+\end{array}\right)
+\left(\begin{array}{ccccccc}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \psi(r_4) \\
+  \vdots
+\end{array}\right),
+```
+
+and the finite difference for the second derivative,
+
+```math
+\frac{\mathrm{d}^{2}}{\mathrm{d}r^{2}}(r) = \frac{\psi(r+\Delta r) - 2f(r) + \psi(r-\Delta r)}{\Delta r^{2}} + O(\Delta r^{2}).
+```
+
+is written as
+
+```math
+\left(\begin{array}{ccccc}
+  \psi''(r_1) \\
+  \psi''(r_2) \\
+  \psi''(r_3) \\
+  \psi''(r_4) \\
+  \vdots
+\end{array}\right)
+\simeq
+\frac{1}{\Delta r^2}
+\left(\begin{array}{ccccccc}
+  -2 &  1 &  0 &  0 & \ldots \\
+   1 & -2 &  1 &  0 & \ldots \\
+   0 &  1 & -2 &  1 & \ldots \\
+   0 &  0 &  1 & -2 & \ldots \\
+  \vdots & \vdots & \vdots & \vdots & \ddots 
+\end{array}\right)
+\left(\begin{array}{ccccccc}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \psi(r_4) \\
+  \vdots
+\end{array}\right).
+```
+
+Similarly, the matrix for the kinetic energy,
+
+```math
+\hat{T}
+=
+-\frac{\hbar^2}{2\mu}
+\left[
+      \frac{\partial^2}{\partial r^2}
+    + \frac{2}{r} \frac{\partial}{\partial r}
+    - \frac{l(l+1)}{r^2}
+\right]
+```
+
+is written as
+
+```math
+\pmb{T}
+= - \frac{\hbar^2}{2\mu}
+  \left[
+    \frac{1}{{\Delta r}^2}
+    \left(\begin{array}{ccccccc}
+      -2 & 1 & 0 & \ldots \\
+      1 & -2 & 1 & \ldots \\
+      0 & 1 & -2 & \ldots \\
+      \vdots & \vdots & \vdots & \ddots \\
+    \end{array}\right)
+    +
+    \left(\begin{array}{ccccccc}
+       2/r_1 & 0 & 0 & \ldots \\
+       0 & 2/r_2 & 0 & \ldots \\
+       0 & 0 & 2/r_3 & \ldots \\
+      \vdots & \vdots & \vdots & \ddots \\
+    \end{array}\right)
+    \frac{1}{\Delta r}
+    \left(\begin{array}{ccccccc}
+       0 &  1 &  0 & \ldots \\
+      -1 &  0 &  1 & \ldots \\
+       0 & -1 & -1 & \ldots \\
+      \vdots & \vdots & \vdots & \ddots \\
+    \end{array}\right)
+    - l(l+1)
+    \left(\begin{array}{ccccccc}
+       {r_1}^2 & 0 & 0 & \ldots \\
+       0 & {r_2}^2 & 0 & \ldots \\
+       0 & 0 & {r_3}^2 & \ldots \\
+      \vdots & \vdots & \vdots & \ddots \\
+    \end{array}\right)
+  \right].
+```
+"""
 function matrix(o::NonRelativisticKinetic, method::FiniteDifferenceMethod)
   D  = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   D² = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   return -o.ℏ^2/2/o.m * (D² + SparseArrays.spdiagm(2 ./ method.R) * D - method.l*(method.l+1) * SparseArrays.spdiagm(1 ./ method.R .^ 2))
 end
 
+@doc raw"""
+`matrix(o::PotentialTerm, method::FiniteDifferenceMethod)`
+
+The matrix for the potential energy ``V(r)`` is a diagonal matrix,
+
+```math
+\pmb{V} = 
+\left(\begin{array}{ccccccc}
+  V(r_1) & 0 & 0 & \ldots \\
+  0 & V(r_2) & 0 & \ldots \\
+  0 & 0 & V(r_3) & \ldots \\
+  \vdots & \vdots & \vdots & \ddots \\
+\end{array}\right).
+```
+"""
 function matrix(o::PotentialTerm, method::FiniteDifferenceMethod)
   return SparseArrays.spdiagm([V(o, r) for r in method.R])
 end
 
+@doc raw"""
+`solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturbation=Hamiltonian(), info=4, nₘₐₓ=4)`
+
+This method solve the eigenvalue problem for the Hamiltonian discretized as a sparse matrix with finite difference approximation,
+```math
+\pmb{H} \pmb{\psi} = E \pmb{\psi}.
+```
+The eigenvalue ``E`` is an approximation of the exact energy and the eigenvector ``\pmb{\psi}`` is a vector of the approximated values of the exact wavefunction ``\psi(r)`` on points of the grid,
+```math
+\pmb{\psi}
+=
+\left(\begin{array}{c}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \vdots \\
+\end{array}\right).
+```
+"""
 function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturbation=Hamiltonian(), info=4, nₘₐₓ=4)
   
   # Initialization
@@ -123,6 +314,9 @@ function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturb
   end
 end
 
+@doc raw"""
+`solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteDifferenceMethod, info=4, nₘₐₓ=4)`
+"""
 function solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteDifferenceMethod, info=4, nₘₐₓ=4)
 
   # Initialization
