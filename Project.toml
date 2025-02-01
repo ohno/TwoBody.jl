@@ -14,6 +14,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Subscripts = "2b7f82d5-8785-4f63-971e-f18ddbeb808e"
 
 [compat]
+ArnoldiMethod = "0.4.0"
 FiniteDifferenceMatrices = "0.1.0"
 Optim = "1.9.4"
 SpecialFunctions = "2.3.1"
