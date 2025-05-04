@@ -113,7 +113,7 @@ end
 fig
 ```
 
-## API
+## API reference
 
 ```@docs; canonical=false
 TwoBody.FiniteDifferenceMethod

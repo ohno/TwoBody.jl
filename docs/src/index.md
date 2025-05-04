@@ -6,7 +6,7 @@ CurrentModule = TwoBody
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ohno.github.io/TwoBody.jl/stable) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ohno.github.io/TwoBody.jl/dev) [![Build Status](https://github.com/ohno/TwoBody.jl/workflows/CI/badge.svg)](https://github.com/ohno/TwoBody.jl/actions)
 
-[TwoBody.jl](https://github.com/ohno/TwoBody.jl): a Julia package for two-body problems
+[TwoBody.jl](https://github.com/ohno/TwoBody.jl): a Julia package for quantum mechanical two-body problems
 
 ## Install
 

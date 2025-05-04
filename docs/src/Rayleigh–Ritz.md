@@ -110,7 +110,9 @@ end
 fig
 ```
 
-## Solver
+## API reference
+
+### Solver
 
 ```@docs; canonical=false
 solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
@@ -121,7 +123,7 @@ optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), inf
 optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 ```
 
-## Basis Set
+### Basis Set
 
 ```@docs; canonical=false
 TwoBody.BasisSet
@@ -129,21 +131,21 @@ TwoBody.GeometricBasisSet
 TwoBody.geometric(r₁, rₙ, n::Int; nₘₐₓ::Int=n, nₘᵢₙ::Int=1)
 ```
 
-## Basis Functions
+### Basis Functions
 
 ```@docs; canonical=false
 TwoBody.SimpleGaussianBasis
 TwoBody.ContractedBasis
 ```
 
-## Matrix
+### Matrix
 
 ```@docs; canonical=false
 matrix(basisset::BasisSet)
 matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
 ```
 
-## Matrix Elements
+### Matrix Elements
 
 ```@docs; canonical=false
 element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
