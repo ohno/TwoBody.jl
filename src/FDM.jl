@@ -269,11 +269,11 @@ function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturb
       println("\nn \tperturbation")
       M = matrix(perturbation, method)
       for n in 1:min(nₘₐₓ, info)
-      println("$n\t", C[:,n]' * M * C[:,n])
+        println("$n\t", C[:,n]' * M * C[:,n])
       end
       println("\nn \teigenvalue + perturbation")
       for n in 1:min(nₘₐₓ, info)
-          println("$n\t", E[n] + C[:,n]' * M * C[:,n])
+        println("$n\t", E[n] + C[:,n]' * M * C[:,n])
       end
     end
     println("\nn \terror check, |<ψₙ|H|ψₙ> - E| = |cₙ' * H * cₙ - E| = 0")
