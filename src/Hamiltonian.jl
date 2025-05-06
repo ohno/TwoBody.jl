@@ -1,21 +1,123 @@
 export Operator, Hamiltonian, getindex, NonRelativisticKinetic, RestEnergy, RelativisticCorrection, RelativisticKinetic, ConstantPotential, LinearPotential, CoulombPotential, PowerLawPotential, GaussianPotential, ExponentialPotential, YukawaPotential, DeltaPotential, FunctionPotential, UniformGridPotential
 
+# type
+
+abstract type Operator end
+abstract type PotentialTerm <: Operator end
+abstract type KineticTerm <: Operator end
+
 # struct
+
+struct Hamiltonian
+  terms::Array{Operator,1}
+  Hamiltonian(args...) = new([args...])
+end
+
+Base.@kwdef struct Laplacian <: KineticTerm
+  coefficient = 1
+end
+
+Base.@kwdef struct NonRelativisticKinetic <: KineticTerm
+  ℏ = 1
+  m = 1
+end
+
+Base.@kwdef struct RestEnergy <: KineticTerm
+  c = 1
+  m = 1
+end
+
+Base.@kwdef struct RelativisticCorrection <: KineticTerm
+  c = 1
+  m = 1
+  n = 2
+end
+
+Base.@kwdef struct RelativisticKinetic <: KineticTerm
+  c = 1
+  m = 1
+end
+
+Base.@kwdef struct ConstantPotential <: PotentialTerm
+  constant = 1
+end
+
+Base.@kwdef struct LinearPotential <: PotentialTerm
+  coefficient = 1
+end
+
+Base.@kwdef struct CoulombPotential <: PotentialTerm
+  coefficient = 1
+end
+
+Base.@kwdef struct PowerLawPotential <: PotentialTerm
+  coefficient = 1
+  exponent = 1
+end
+
+Base.@kwdef struct GaussianPotential <: PotentialTerm
+  coefficient = 1
+  exponent = 1
+end
+
+Base.@kwdef struct ExponentialPotential <: PotentialTerm
+  coefficient = 1
+  exponent = 1
+end
+
+Base.@kwdef struct YukawaPotential <: PotentialTerm
+  coefficient = 1
+  exponent = 1
+end
+
+Base.@kwdef struct DeltaPotential <: PotentialTerm
+  coefficient = 1
+end
+
+Base.@kwdef struct FunctionPotential <: PotentialTerm
+  f::Function
+end
+
+Base.@kwdef struct UniformGridPotential <: PotentialTerm
+  R::StepRangeLen
+  V::Array{Number,1}
+end
+
+# utility
+
+Base.string(t::Operator) = "$(typeof(t))(" * join(["$(symbol)=$(getproperty(t,symbol))" for symbol in fieldnames(typeof(t))], ", ") * ")"
+Base.string(H::Hamiltonian) = "Hamiltonian(" * join(["$(term)" for term in H.terms], ", ") * ")"
+Base.show(io::IO, t::Operator) = print(io, Base.string(t))
+Base.show(io::IO, H::Hamiltonian) = print(io, Base.string(H))
+Base.getindex(H::Hamiltonian, index) = H.terms[index]
+Base.length(H::Hamiltonian) = length(H.terms)
+
+# function
+
+V(p::ConstantPotential   , r) = p.constant
+V(p::LinearPotential     , r) = p.coefficient * r
+V(p::CoulombPotential    , r) = p.coefficient / r
+V(p::PowerLawPotential   , r) = p.coefficient * r ^ p.exponent
+V(p::GaussianPotential   , r) = p.coefficient * exp(- p.exponent * r ^ 2)
+V(p::ExponentialPotential, r) = p.coefficient * exp(- p.exponent * r)
+V(p::YukawaPotential     , r) = p.coefficient * exp(- p.exponent * r) / r
+# V(p::DeltaPotential      , r) = 
+V(p::FunctionPotential   , r) = p.f(r)
+V(p::UniformGridPotential, r) = p.V[findfirst(p.R, r)]
+
+# docstring
 
 @doc raw"""
 `Operator` is an abstract type.
-"""
-abstract type Operator end
+""" Operator
 
 @doc raw"""
 `PotentialTerm <: Operator` is an abstract type.
-"""
-abstract type PotentialTerm <: Operator end
+""" PotentialTerm
 
 @doc raw"""
 `KineticTerm <: Operator` is an abstract type.
-"""
-abstract type KineticTerm <: Operator end
+""" KineticTerm
 
 @doc raw"""
 `Hamiltonian(operator1, operator2, ...)`
@@ -37,14 +139,7 @@ H = Hamiltonian(
   CoulombPotential(coefficient = -1),
 )
 ```
-"""
-struct Hamiltonian
-  terms::Array{Operator,1}
-  Hamiltonian(args...) = new([args...])
-end
-
-Base.getindex(H::Hamiltonian, index) = H.terms[index]
-Base.length(H::Hamiltonian) = length(H.terms)
+""" Hamiltonian
 
 @doc raw"""
 `Laplacian(coefficient=1)`
@@ -54,21 +149,14 @@ Base.length(H::Hamiltonian) = length(H.terms)
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-"""
-Base.@kwdef struct Laplacian <: KineticTerm
-  coefficient = 1
-end
+""" Laplacian
 
 @doc raw"""
 `NonRelativisticKinetic(ℏ=1, m=1)`
 ```math
 -\frac{\hbar^2}{2m} \nabla^2
 ```
-"""
-Base.@kwdef struct NonRelativisticKinetic <: KineticTerm
-  ℏ = 1
-  m = 1
-end
+""" NonRelativisticKinetic
 
 @doc raw"""
 `RestEnergy(c=1, m=1)`
@@ -76,11 +164,7 @@ end
 m c^2
 ```
 Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu/Value?alphinv)) in the atomic units.
-"""
-Base.@kwdef struct RestEnergy <: KineticTerm
-  c = 1
-  m = 1
-end
+""" RestEnergy
 
 @doc raw"""
 `RelativisticCorrection(c=1, m=1, n=2)`
@@ -97,12 +181,7 @@ The p^{2n} term of the Taylor expansion:
 \end{aligned}
 ```
 Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu/Value?alphinv)) in the atomic units.
-"""
-Base.@kwdef struct RelativisticCorrection <: KineticTerm
-  c = 1
-  m = 1
-  n = 2
-end
+""" RelativisticCorrection
 
 @doc raw"""
 `RelativisticKinetic(c=1, m=1)`
@@ -110,11 +189,7 @@ end
 \sqrt{p^2 c^2 + m^2 c^4} - m c^2
 ```
 Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu/Value?alphinv)) in the atomic units.
-"""
-Base.@kwdef struct RelativisticKinetic <: KineticTerm
-  c = 1
-  m = 1
-end
+""" RelativisticKinetic
 
 @doc raw"""
 `ConstantPotential(constant=1)`
@@ -124,10 +199,7 @@ end
 | Arguments | Symbol |
 | :-- | :-- |
 | `constant` | ``c`` |
-"""
-Base.@kwdef struct ConstantPotential <: PotentialTerm
-  constant = 1
-end
+""" ConstantPotential
 
 @doc raw"""
 `LinearPotential(coefficient=1)`
@@ -137,10 +209,7 @@ end
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-"""
-Base.@kwdef struct LinearPotential <: PotentialTerm
-  coefficient = 1
-end
+""" LinearPotential
 
 @doc raw"""
 `CoulombPotential(coefficient=1)`
@@ -150,10 +219,7 @@ end
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-"""
-Base.@kwdef struct CoulombPotential <: PotentialTerm
-  coefficient = 1
-end
+""" CoulombPotential <: PotentialTerm
 
 @doc raw"""
 `PowerLawPotential(coefficient=1, exponent=1)`
@@ -164,11 +230,7 @@ end
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent` | ``n`` |
-"""
-Base.@kwdef struct PowerLawPotential <: PotentialTerm
-  coefficient = 1
-  exponent = 1
-end
+""" PowerLawPotential
 
 @doc raw"""
 `GaussianPotential(coefficient=1, exponent=1)`
@@ -179,11 +241,7 @@ end
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
-"""
-Base.@kwdef struct GaussianPotential <: PotentialTerm
-  coefficient = 1
-  exponent = 1
-end
+""" GaussianPotential
 
 @doc raw"""
 `ExponentialPotential(coefficient=1, exponent=1)`
@@ -194,11 +252,7 @@ end
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
-"""
-Base.@kwdef struct ExponentialPotential <: PotentialTerm
-  coefficient = 1
-  exponent = 1
-end
+""" ExponentialPotential
 
 @doc raw"""
 `YukawaPotential(coefficient=1, exponent=1)`
@@ -209,11 +263,7 @@ end
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
-"""
-Base.@kwdef struct YukawaPotential <: PotentialTerm
-  coefficient = 1
-  exponent = 1
-end
+""" YukawaPotential
 
 @doc raw"""
 `DeltaPotential(coefficient=1)`
@@ -223,46 +273,15 @@ end
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-"""
-Base.@kwdef struct DeltaPotential <: PotentialTerm
-  coefficient = 1
-end
+""" DeltaPotential
 
 @doc raw"""
 `FunctionPotential(f)`
 ```math
 + f(r)
 ```
-"""
-Base.@kwdef struct FunctionPotential <: PotentialTerm
-  f::Function
-end
+""" FunctionPotential
 
 @doc raw"""
 `UniformGridPotential(R, V)`
-"""
-Base.@kwdef struct UniformGridPotential <: PotentialTerm
-  R::StepRangeLen
-  V::Array{Number,1}
-end
-
-# display
-
-Base.string(t::Operator) = "$(typeof(t))(" * join(["$(symbol)=$(getproperty(t,symbol))" for symbol in fieldnames(typeof(t))], ", ") * ")"
-Base.show(io::IO, t::Operator) = print(io, Base.string(t))
-Base.string(H::Hamiltonian) = "Hamiltonian(" * join(["$(term)" for term in H.terms], ", ") * ")"
-# Base.string(H::Hamiltonian) = "Hamiltonian(\n" * join(["  $(term)" for term in H.terms], ",\n") * ",\n)"
-Base.show(io::IO, H::Hamiltonian) = print(io, Base.string(H))
-
-# function
-
-V(p::ConstantPotential   , r) = p.constant
-V(p::LinearPotential     , r) = p.coefficient * r
-V(p::CoulombPotential    , r) = p.coefficient / r
-V(p::PowerLawPotential   , r) = p.coefficient * r ^ p.exponent
-V(p::GaussianPotential   , r) = p.coefficient * exp(- p.exponent * r ^ 2)
-V(p::ExponentialPotential, r) = p.coefficient * exp(- p.exponent * r)
-V(p::YukawaPotential     , r) = p.coefficient * exp(- p.exponent * r) / r
-# V(p::DeltaPotential      , r) = 
-V(p::FunctionPotential   , r) = p.f(r)
-V(p::UniformGridPotential, r) = p.V[findfirst(p.R, r)]
+""" UniformGridPotential

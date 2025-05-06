@@ -6,15 +6,8 @@ import Printf
 import SpecialFunctions
 import Subscripts
 
-@doc raw"""
-`solve(hamiltonian::Hamiltonian, basisset::BasisSet)`
+# solver
 
-This function returns the eigenvalues ``E``  and eigenvectors ``\pmb{c}`` for
-```math
-\pmb{H} \pmb{c} = E \pmb{S} \pmb{c}.
-```
-The Hamiltonian matrix is defined as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle``. The overlap matrix is defined as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``.
-"""
 function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
 
   # Initialization
@@ -100,14 +93,6 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   end
 end
 
-@doc raw"""
-`function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)`
-
-This function minimizes the energy by changing the exponents of the basis functions using Optim.jl.
-```math
-\frac{\partial E}{\partial a_i} = 0
-```
-"""
 function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 
   # optimizer & initial values
@@ -167,29 +152,14 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
 
 end
 
-@doc raw"""
-`solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)`
-
-This a solver for 1-basis calculations. This function returns `solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)`.
-"""
 function solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
   return solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)
 end
 
-@doc raw"""
-`optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())`
-
-This a optimizer for 1-basis calculations. This function returns `optimize(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info, progress=progress, optimizer=optimizer, options...)`.
-"""
 function optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=1, progress=true, optimizer=Optim.NelderMead(), options...)
   return optimize(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info, progress=progress, optimizer=optimizer, options...)
 end
 
-@doc raw"""
-`solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)`
-
-This function is a wrapper for `solve(hamiltonian::Hamiltonian, basisset::BasisSet, ...)`.
-"""
 function solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
   if 0 < info
     println("\n# geometric progression\n")
@@ -201,14 +171,6 @@ function solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbati
   solve(hamiltonian, BasisSet(basisset.basis...); perturbation=perturbation, info=info)
 end
 
-@doc raw"""
-`optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())`
-
-This function minimizes the energy by optimizing $r_1$ and $r_n$ using Optim.jl.
-```math
-\frac{\partial E}{\partial r_1} = \frac{\partial E}{\partial r_n} = 0
-```
-"""
 function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 
   # optimizer & initial values
@@ -266,7 +228,121 @@ function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturb
 
 end
 
-# SGEM
+# element
+
+function element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return (π/(SGB1.a+SGB2.a))^(3/2)
+end
+
+function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.m * o.c^2 * (π/(SGB1.a+SGB2.a))^(3/2)
+end
+
+function element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return - 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
+end
+
+function element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.ℏ^2/(2*o.m) * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
+end
+
+function element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.constant * (π/(SGB1.a+SGB2.a))^(3/2)
+end
+
+function element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.coefficient * 2*π/(SGB1.a+SGB2.a)^2
+end
+
+function element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.coefficient * 2*π/(SGB1.a+SGB2.a)
+end
+
+function element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.coefficient * 2 * π * SpecialFunctions.gamma((o.exponent+3)/2) / (SGB1.a+SGB2.a)^((o.exponent+3)/2)
+end
+
+function element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return o.coefficient * (π/(o.exponent+SGB1.a+SGB2.a))^(3/2)
+end
+
+function element(o::Hamiltonian, B1::Basis, B2::Basis)
+  return sum(element(term, B1, B2) for term in o.terms)
+end
+
+# matrix
+
+function matrix(basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  # S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  S = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      S[i,j] = element(basisset.basis[i], basisset.basis[j])
+    end
+  end
+  return LinearAlgebra.Symmetric(S)
+end
+
+function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  # H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  H = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      H[i,j] = element(hamiltonian, basisset.basis[i], basisset.basis[j])
+    end
+  end
+  return LinearAlgebra.Symmetric(H)
+end
+
+# docstring
+
+@doc raw"""
+`solve(hamiltonian::Hamiltonian, basisset::BasisSet)`
+
+This function returns the eigenvalues ``E``  and eigenvectors ``\pmb{c}`` for
+```math
+\pmb{H} \pmb{c} = E \pmb{S} \pmb{c}.
+```
+The Hamiltonian matrix is defined as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle``. The overlap matrix is defined as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``.
+""" solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
+
+@doc raw"""
+`function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)`
+
+This function minimizes the energy by changing the exponents of the basis functions using Optim.jl.
+```math
+\frac{\partial E}{\partial a_i} = 0
+```
+""" optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+
+@doc raw"""
+`solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)`
+
+This a solver for 1-basis calculations. This function returns `solve(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info)`.
+""" solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
+
+@doc raw"""
+`optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())`
+
+This a optimizer for 1-basis calculations. This function returns `optimize(hamiltonian, BasisSet(basis); perturbation=perturbation, info=info, progress=progress, optimizer=optimizer, options...)`.
+""" optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=1, progress=true, optimizer=Optim.NelderMead(), options...)
+
+@doc raw"""
+`solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)`
+
+This function is a wrapper for `solve(hamiltonian::Hamiltonian, basisset::BasisSet, ...)`.
+""" solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
+
+@doc raw"""
+`optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, optimizer=Optim.NelderMead())`
+
+This function minimizes the energy by optimizing $r_1$ and $r_n$ using Optim.jl.
+```math
+\frac{\partial E}{\partial r_1} = \frac{\partial E}{\partial r_n} = 0
+```
+""" optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 
 @doc raw"""
 `element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -298,10 +374,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
-"""
-function element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return (π/(SGB1.a+SGB2.a))^(3/2)
-end
+""" element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -327,11 +400,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
-"""
-function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.m * o.c^2 * (π/(SGB1.a+SGB2.a))^(3/2)
-end
-
+""" element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -344,11 +413,7 @@ end
     }
 \end{aligned}
 ```
-```
-"""
-function element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return - 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
-end
+""" element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -465,10 +530,7 @@ or
      }
 \end{aligned}
 ```
-"""
-function element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.ℏ^2/(2*o.m) * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
-end
+""" element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -494,10 +556,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
-"""
-function element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.constant * (π/(SGB1.a+SGB2.a))^(3/2)
-end
+""" element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -522,10 +581,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
 ```
-"""
-function element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.coefficient * 2*π/(SGB1.a+SGB2.a)^2
-end
+""" element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -550,10 +606,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
 ```
-"""
-function element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.coefficient * 2*π/(SGB1.a+SGB2.a)
-end
+""" element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -578,10 +631,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{\Gamma\left( \frac{n+1}{2} \right)}{2 a^{\frac{n+1}{2}}}
 ```
-"""
-function element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.coefficient * 2 * π * SpecialFunctions.gamma((o.exponent+3)/2) / (SGB1.a+SGB2.a)^((o.exponent+3)/2)
-end
+""" element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -606,10 +656,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
-"""
-function element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.coefficient * (π/(o.exponent+SGB1.a+SGB2.a))^(3/2)
-end
+""" element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::Hamiltonian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -622,41 +669,16 @@ end
   &= \sum_k \langle \phi_{i} | \hat{o}_k | \phi_{j} \rangle \\
 \end{aligned}
 ```
-"""
-function element(o::Hamiltonian, B1::Basis, B2::Basis)
-  return sum(element(term, B1, B2) for term in o.terms)
-end
+""" element(o::Hamiltonian, B1::Basis, B2::Basis)
 
 @doc raw"""
 `matrix(basisset::BasisSet)`
 
 This function returns the overlap matrix $\pmb{S}$. The element is written as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``.
-"""
-function matrix(basisset::BasisSet)
-  nₘₐₓ = length(basisset.basis)
-  # S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-  S = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
-  for j in 1:nₘₐₓ
-    for i in 1:j
-      S[i,j] = element(basisset.basis[i], basisset.basis[j])
-    end
-  end
-  return LinearAlgebra.Symmetric(S)
-end
+""" matrix(basisset::BasisSet)
 
 @doc raw"""
 `matrix(hamiltonian::Hamiltonian, basisset::BasisSet)`
 
 This function returns the Hamiltonian matrix $\pmb{H}$. The element is written as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle``.
-"""
-function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
-  nₘₐₓ = length(basisset.basis)
-  # H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-  H = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
-  for j in 1:nₘₐₓ
-    for i in 1:j
-      H[i,j] = element(hamiltonian, basisset.basis[i], basisset.basis[j])
-    end
-  end
-  return LinearAlgebra.Symmetric(H)
-end
+""" matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
