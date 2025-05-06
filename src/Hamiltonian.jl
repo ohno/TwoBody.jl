@@ -219,7 +219,7 @@ Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-""" CoulombPotential <: PotentialTerm
+""" CoulombPotential
 
 @doc raw"""
 `PowerLawPotential(coefficient=1, exponent=1)`
