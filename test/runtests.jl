@@ -6,5 +6,8 @@ using Antique
 using SpecialFunctions
 using ForwardDiff
 
-include("Rayleigh–Ritz.jl")
-include("FDM.jl")
+@testset verbose = true "TwoBody.jl" begin
+  include("Basis.jl")
+  include("Rayleigh–Ritz.jl")
+  include("FDM.jl")
+end

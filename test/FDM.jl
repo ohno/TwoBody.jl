@@ -16,24 +16,24 @@
   res = solve(H, FDM, info=4)
   
   println("<ψₙ|ψₙ> = cₙ' * cₙ = 1")
-  println("  i\tnumerical         \tanalytical        \t|error|")
+  println("  i\tnumerical  \tanalytical")
   for i in 1:res.nₘₐₓ
     numerical  = res.C[:,i]' * res.C[:,i]
     analytical = 1
     error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
     acceptance = error < 1e-5
-    @printf("%3d\t%.16f\t%.16f\t%.16f%%\t%s\n", i, numerical, analytical, error*100, acceptance ? "✔" :  "✗")
+    @printf("%3d\t%.9f\t%.9f\t%s\n", i, numerical, analytical, acceptance ? "✔" :  "✗")
     @test acceptance
   end
   
   println("|<ψₙ|H|ψₙ> - E| = |cₙ' * H * cₙ - E| = 0")
-  println("  i\tnumerical         \tanalytical        \t|error|")
+  println("  i\tnumerical  \tanalytical")
   for i in 1:res.nₘₐₓ
     numerical  = abs((res.C[:,i]' * res.H * res.C[:,i]) - res.E[i])
     analytical = 0
     error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
     acceptance = error < 1e-5
-    @printf("%3d\t%.16f\t%.16f\t%.16f%%\t%s\n", i, numerical, analytical, error*100, acceptance ? "✔" :  "✗")
+    @printf("%3d\t%.9f\t%.9f\t%s\n", i, numerical, analytical, acceptance ? "✔" :  "✗")
     @test acceptance
   end
   
@@ -41,18 +41,18 @@
   HA = Antique.HydrogenAtom(Z=1, mₑ=1.0, a₀=1.0, Eₕ=1.0, ℏ=1.0)
 
   println("Energy")
-  println("  i\tnumerical         \tanalytical        \t|error|")
+  println("  i\tnumerical  \tanalytical")
   for i in 1:res.nₘₐₓ
     numerical  = res.E[i]
     analytical = Antique.E(HA, n=i)
     error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
     acceptance = error < 1e-2
-    @printf("%3d\t%.16f\t%.16f\t%.16f%%\t%s\n", i, numerical, analytical, error*100, acceptance ? "✔" :  "✗")
+    @printf("%3d\t%.9f\t%.9f\t%s\n", i, numerical, analytical, acceptance ? "✔" :  "✗")
     @test acceptance
   end
 
   println("Wave Function")
-  println("  i\t  r\tnumerical         \tanalytical        \t|error|")
+  println("  i\t  r\tnumerical  \tanalytical")
   for n in 1:res.nₘₐₓ
     @show n
     for i in keys(res.method.R[begin:min(10,length(res.method.R))])
@@ -61,7 +61,7 @@
         analytical = abs(Antique.ψ(HA, r, 0, 0, n=n)) 
         error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
         acceptance = error < 5e-2
-        @printf("%3d\t%.1f\t%.16f\t%.16f\t%.16f%%\t%s\n", i, r, numerical, analytical, error*100, acceptance ? "✔" :  "✗")
+        @printf("%3d\t%.1f\t%.9f\t%.9f\t%s\n", i, r, numerical, analytical, acceptance ? "✔" :  "✗")
         @test acceptance
     end
   end
