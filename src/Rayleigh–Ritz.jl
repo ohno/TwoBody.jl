@@ -418,6 +418,8 @@ Integral Formula:
 @doc raw"""
 `element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
+## Derivation (without Green's identity)
+
 ```math
 \begin{aligned}
   T_{ij} = \langle \phi_{i} | \hat{T} | \phi_{j} \rangle
@@ -478,7 +480,7 @@ Integral Formula:
 \end{aligned}
 ```
 
-or
+## Derivation (with Green's identity)
 
 ```math
 \begin{aligned}
@@ -528,6 +530,33 @@ or
         \cdot 6
         \cdot \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
      }
+\end{aligned}
+```
+
+## Formula
+
+[Green's first identity](https://en.wikipedia.org/wiki/Green%27s_identities#Green's_first_identity):
+```math
+\begin{aligned}
+  \iiint_V
+  f \pmb{\nabla}^2 g
+  ~ \mathrm{d}V
++ \iiint_V
+  \pmb{\nabla} f \cdot
+  \pmb{\nabla} g
+  ~ \mathrm{d}V
+= \iint_{\partial V}
+  f \pmb{\nabla} g \cdot \pmb{n}
+  ~ \mathrm{d}S
+\end{aligned}
+```
+
+[generalized Gaussian integral](https://en.wikipedia.org/wiki/Gaussian_integral#Integrals_of_similar_form):
+```math
+\begin{aligned}
+  \mathrm{GGI}(n,b)
+  = \int_0^{\infty} x^{n} \exp \left(-b x^2\right) \mathrm{d}x
+  = \frac{\Gamma\left( \frac{n+1}{2} \right)}{2 b^{\frac{n+1}{2}}}
 \end{aligned}
 ```
 """ element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
