@@ -66,6 +66,18 @@ Base.length(GBS::GeometricBasisSet) = length(GBS.basis)
 φ(b::GaussianBasis, r, θ, φ) = N(b.l) * r^b.l * exp(-b.a*r^2) * Y(b.l, b.m, θ, φ)
 φ(b::ContractedBasis, r, θ, φ) = sum(b.c[i] * φ(b.φ[i], r, θ, φ) for i in 1:length(b.c))
 
+# function for testing
+
+function expikr(k,θk,φk,r,θr,φr)
+  kx = k * sin(θk) * cos(φk)
+  ky = k * sin(θk) * sin(φk)
+  kz = k * cos(θk)
+  rx = r * sin(θr) * cos(φr)
+  ry = r * sin(θr) * sin(φr)
+  rz = r * cos(θr)
+  return exp(im * (kx*rx + ky*ry + kz*rz))
+end
+
 # docstring
 
 @doc raw"""
