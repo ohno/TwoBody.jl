@@ -21,7 +21,7 @@ The eigenvalue ``E`` is an approximation of the exact energy and the eigenvector
 ```
 A uniform grid spacing is used, ``r_{i+1} = r_{i} + \Delta r``. See the API reference for the expression of the matrix ``\pmb{H}``.
 
-## Examples
+## Usage
 
 Run the following code before each use.
 
@@ -72,20 +72,32 @@ By default the eigenvalues and the expectation values are displayed.
 solve(H, FDM)
 ```
 
-Here is a comprehensive example including calculations up to excited states.
+## Example of Hydrogen Atom
+
+Analytical solutions are implemented in [Antique.jl](https://ohno.github.io/Antique.jl/stable/HydrogenAtom/).
 
 ```@example example
 # solve
 using TwoBody
 H = Hamiltonian(NonRelativisticKinetic(1,1), CoulombPotential(-1))
-FDM = TwoBody.FiniteDifferenceMethod()
+FDM = FiniteDifferenceMethod()
 res = solve(H, FDM, info=0, nₘₐₓ=4)
 
 # benchmark
 import Antique
 HA = Antique.HydrogenAtom(Z=1, Eₕ=1.0, a₀=1.0, mₑ=1.0, ℏ=1.0)
 
-# plot
+# energy
+using Printf
+println("Total Energy Eₙ")
+println("------------------------------")
+println(" n     numerical    analytical")
+println("------------------------------")
+for n in 1:4
+  @printf("%2d  %+.9f  %+.9f\n", n, res.E[n], Antique.E(HA,n=n))
+end
+
+# wave function
 using CairoMakie
 fig = Figure(
   size = (840,600),
@@ -110,8 +122,66 @@ for n in 1:4
   lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(HA,r,0,0,n=n))^2, label="Antique.jl", color=:black)
   axislegend(axis, "n = $n", position=:rt, framevisible=false)
 end
-fig
+save("assets/FDM_HA.svg", fig) # hide
+; # hide
 ```
+![](assets/FDM_HA.svg)
+
+## Example of Spherical Oscillator
+
+Analytical solutions are implemented in [spherical oscillator](https://ohno.github.io/Antique.jl/stable/SphericalOscillator/).
+
+```@example example
+# solve
+using TwoBody
+H = Hamiltonian(NonRelativisticKinetic(1,1), PowerLawPotential(coefficient=1/2,exponent=2))
+FDM = FiniteDifferenceMethod(rₘₐₓ=10.0)
+res = solve(H, FDM, info=0, nₘₐₓ=4)
+
+# benchmark
+import Antique
+SO = Antique.SphericalOscillator(k=1.0, μ=1.0, ℏ=1.0)
+
+# energy
+using Printf
+println("Total Energy Eₙ")
+println("------------------------------")
+println(" n     numerical    analytical")
+println("------------------------------")
+for n in 1:4
+  @printf("%2d  %+.9f  %+.9f\n", n-1, res.E[n], Antique.E(SO,n=n-1))
+end
+
+# wave function
+using CairoMakie
+fig = Figure(
+  size = (840,600),
+  fontsize = 11.5,
+  backgroundcolor = :transparent
+)
+for n in 1:4
+  axis = Axis(
+    fig[div(n-1,2)+1,rem(n-1,2)+1],
+    xlabel = L"$r~/~a_0$",
+    ylabel = L"$4\pi r^2|\psi(r)|^2~ /~{a_0}^{-1}$",
+    xlabelsize = 16.5,
+    ylabelsize = 16.5,
+    limits=(
+      0, [4.5, 5.0, 5.5, 6.0][n],
+      0, [0.90, 0.75, 0.70, 0.65][n],
+    )
+  )
+  X = res.method.R
+  Y = 4π * X .^2 .* res.ψ[:,n] .^ 2
+  scatter!(axis, X, Y, label="TwoBody.jl", markersize=6)
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(SO,r,0,0,n=n-1))^2, label="Antique.jl", color=:black)
+  axislegend(axis, "n = $(n-1)", position=:rt, framevisible=false)
+end
+fig
+save("assets/FDM_SO.svg", fig) # hide
+; # hide
+```
+![](assets/FDM_SO.svg)
 
 ## API reference
 
