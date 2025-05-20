@@ -101,7 +101,7 @@ end
 using CairoMakie
 fig = Figure(
   size = (840,600),
-  fontsize = 11.5,
+  fontsize = 11,
   backgroundcolor = :transparent
 )
 for n in 1:4
@@ -156,7 +156,7 @@ end
 using CairoMakie
 fig = Figure(
   size = (840,600),
-  fontsize = 11.5,
+  fontsize = 11,
   backgroundcolor = :transparent
 )
 for n in 1:4
