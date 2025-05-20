@@ -11,7 +11,6 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://ohno.github.io/TwoBody.jl",
-        repolink="https://github.com/ohno/TwoBody.jl",
         assets=String[],
     ),
     pages=[
