@@ -6,6 +6,29 @@ TwoBody.jl: a Julia package for quantum mechanical two-body problems
 
 https://ohno.github.io/TwoBody.jl/dev/
 
+## Dependency
+
+```mermaid
+---
+config:
+  layout: elk
+  theme: mc
+---
+flowchart TD
+  A["Hamiltonian.jl"]
+  B["Basis.jl"]
+  C["Rayleigh-Ritz.jl"]
+  D["GEM.jl"]
+  E["FiniteDifferenceMatrices.jl"]
+  F["FDM.jl"]
+  G["VMC.jl"]
+  Z["TwoBody.jl"]
+  A --> C & D & F & G
+  B --> C & D
+  E --> F
+  C & D & F & G --> Z
+```
+
 ## Developer's Guide
 
 There are several tools for developers.
