@@ -2,7 +2,7 @@
 CurrentModule = TwoBody
 ```
 
-# Rayleigh–Ritz Method
+# Rayleigh-Ritz Method
 
 This method is one of the variational method. It solves the generalized eigenvalue problem,
 ```math

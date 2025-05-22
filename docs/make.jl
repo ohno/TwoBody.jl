@@ -16,7 +16,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Hamiltonian" => "Hamiltonian.md",
-        "Rayleigh–Ritz Method" => "Rayleigh–Ritz.md",
+        "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
         "Finite Difference Method" => "FDM.md",
         "API reference" => "API.md",
     ],

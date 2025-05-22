@@ -1,4 +1,4 @@
-@testset "Rayleigh–Ritz.jl" begin
+@testset "Rayleigh-Ritz.jl" begin
 
   # Testing Results
 

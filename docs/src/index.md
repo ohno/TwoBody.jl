@@ -37,7 +37,7 @@ H = Hamiltonian(
 nothing # hide
 ```
 
-The usage depends on the method. Define the basis set for the [Rayleigh–Ritz Method](@ref Rayleigh–Ritz-Method):
+The usage depends on the method. Define the basis set for the [Rayleigh-Ritz Method](@ref Rayleigh-Ritz-Method):
 ```math
 \begin{aligned}
   \phi_1(r) &= \exp(-13.00773 ~r^2), \\

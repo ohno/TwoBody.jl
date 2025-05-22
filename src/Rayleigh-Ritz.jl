@@ -23,7 +23,7 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
   # Print
   if 0 < info
     println("\n# method\n")
-    println("Rayleigh–Ritz method with $(typeof(basisset.basis[1]))")
+    println("Rayleigh-Ritz method with $(typeof(basisset.basis[1]))")
     println("J. Thijssen, Computational Physics 2nd Edition (2013)")
     println("https://doi.org/10.1017/CBO9781139171397")
     println("\n# basis function\n")

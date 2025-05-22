@@ -93,7 +93,7 @@ end
 ```math
 \{ \phi_1, \phi_2, \phi_3, \cdots  \}
 ```
-The basis set is the input for Rayleigh–Ritz method. You can define the basis set like this:
+The basis set is the input for Rayleigh-Ritz method. You can define the basis set like this:
 ```math
 \begin{aligned}
   \phi_1(r) &= \exp(-13.00773 ~r^2), \\

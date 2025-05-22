@@ -8,6 +8,6 @@ using ForwardDiff
 
 @testset verbose = true "TwoBody.jl" begin
   include("Basis.jl")
-  include("Rayleigh–Ritz.jl")
+  include("Rayleigh-Ritz.jl")
   include("FDM.jl")
 end
