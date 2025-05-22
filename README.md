@@ -15,7 +15,7 @@ config:
   theme: mc
 ---
 flowchart TD
-  A["Hamiltonians.jl"]
+  A["Hamiltonian.jl"]
   B["Basis.jl"]
   C["Rayleigh-Ritz.jl"]
   D["GEM.jl"]
@@ -23,9 +23,8 @@ flowchart TD
   F["FDM.jl"]
   G["VMC.jl"]
   Z["TwoBody.jl"]
-  A --> B & F & G
-  B --> C
-  B --> D
+  A --> C & D & F & G
+  B --> C & D
   E --> F
   C & D & F & G --> Z
 ```
