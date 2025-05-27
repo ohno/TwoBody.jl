@@ -10,71 +10,36 @@ import Subscripts
 
 function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
 
-  # Initialization
+  # initialization
   nₘₐₓ = length(basisset.basis)
 
-  # Matrix Elements
+  # matrix element
   S = matrix(basisset)
   H = matrix(hamiltonian, basisset)
 
-  # Calculations
+  # calculation
   E, C = LinearAlgebra.eigen(H, S)
 
-  # Print
+  # expectation value
   if 0 < info
-    println("\n# method\n")
-    println("Rayleigh-Ritz method with $(typeof(basisset.basis[1]))")
-    println("J. Thijssen, Computational Physics 2nd Edition (2013)")
-    println("https://doi.org/10.1017/CBO9781139171397")
-    println("\n# basis function\n")
-    for n in 1:nₘₐₓ
-      Printf.@printf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), basisset.basis[n])
-    end
-    println("\n# eigenfunction\n")
-    for n in 1:min(nₘₐₓ, info)
-      Printf.@printf("ψ%s(r) = ", Subscripts.sub("$n"))
-      for i in 1:nₘₐₓ
-        Printf.@printf("%s %.6fφ%s(r) ", C[i,n]<0 ? "-" : "+", abs(C[i,n]), Subscripts.sub("$i"))
-      end
-      println()
-    end
-    println("\n# eigenvalue\n")
-    for n in 1:min(nₘₐₓ, info)
-      Printf.@printf("E%s = %s\n", Subscripts.sub("$n"), "$(E[n])")
-    end
-    println("\n# others")
-    println("\nn \tnorm, <ψₙ|ψₙ> = cₙ' * S * cₙ")
-    for n in 1:min(nₘₐₓ, info)
-      println("$n\t", C[:,n]' * S * C[:,n])
-    end
+    expectation = Dict()
+    expectation[:S] = [C[:,n]' * S * C[:,n] for n in 1:min(nₘₐₓ, info)]
+    expectation[:H] = [C[:,n]' * H * C[:,n] for n in 1:min(nₘₐₓ, info)]
+    expectation[:0] = [expectation[:H][n] - E[n] for n in 1:min(nₘₐₓ, info)]
     if !isempty(perturbation.terms)
-      println("\nn \tperturbation")
-      M = [element(perturbation, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-      for n in 1:min(nₘₐₓ, info)
-      println("$n\t", C[:,n]' * M * C[:,n])
-      end
-      println("\nn \teigenvalue + perturbation")
-      for n in 1:min(nₘₐₓ, info)
-          println("$n\t", E[n] + C[:,n]' * M * C[:,n])
-      end
-    end
-    println("\nn \terror check, |<ψₙ|H|ψₙ> - E| = |cₙ' * H * cₙ - E| = 0")
-    for n in 1:min(nₘₐₓ, info)
-      println("$n\t", abs(C[:,n]' * H * C[:,n] - E[n]))
+      M = matrix(perturbation, basisset)
+      expectation[:perturbation] = [C[:,n]' * M * C[:,n] for n in 1:min(nₘₐₓ, info)]  
     end
     for term in [hamiltonian.terms..., perturbation.terms...]
-      println("\nn \texpectation value of $(term)")
-      M = [element(term, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-      for n in 1:min(nₘₐₓ, info)
-        println("$n\t", C[:,n]' * M * C[:,n])
-      end
+      M = matrix(term, basisset)
+      expectation[term] = [C[:,n]' * M * C[:,n] for n in 1:min(nₘₐₓ, info)]
     end
-    println()
   end
 
-  # Return
-  if 0 ≤ info
-    return (
+  # return
+  if 0 < info
+    return ResultRayleighRitz(;
+      info = info,
       hamiltonian = hamiltonian, 
       perturbation = perturbation,
       basisset = basisset,
@@ -85,31 +50,17 @@ function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamilt
       C = C,
       φ = [r -> TwoBody.φ(basisset.basis[n], r) for n in 1:nₘₐₓ],
       ψ = [r -> sum(C[i,n]*TwoBody.φ(basisset.basis[i], r) for i in 1:nₘₐₓ) for n in 1:nₘₐₓ],
+      expectation = expectation,
     )
   else
-    return (
+    return ResultRayleighRitz(;
       E = E,
     )
   end
+
 end
 
 function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
-
-  # optimizer & initial values
-  if 0 < info
-    println("\n# optimizer\n")
-    println(optimizer)
-    println("P. K. Mogensen, A. N. Riseth, J. Open Source Softw., 3(24), 615 (2018)")
-    println("https://doi.org/10.21105/joss.00615")
-    println("\n# initial basis function\n")
-    nₘₐₓ = length(basisset.basis)
-    for n in 1:nₘₐₓ
-      Printf.@printf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), basisset.basis[n])
-    end
-  end
-  if 0 < info && progress
-    println("\n# optimization log\n")
-  end
 
   # optimize
   history = []
@@ -124,16 +75,10 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
       if 0 ≤ info
         push!(history, (energy=E, parameters=x))
       end
-      if 0 < info && progress
-        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
-      end
-    E
+      E
     catch
       if 0 ≤ info
         push!(history, (energy=Inf, parameters=x))
-      end
-      if 0 < info && progress
-        Printf.@printf("%.9e  %s\n", Inf, "[" * join([Printf.@sprintf("%.3e", x[i]) for i in keys(x)], ", ") *"]")
       end
       Inf
     end,
@@ -142,12 +87,21 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
     options...
   )
 
-  # final results
+  # result
   res = solve(hamiltonian, BasisSet([typeof(basisset.basis[i])(res.minimizer[i]) for i in keys(basisset.basis)]...), perturbation=perturbation, info=info)
   if 0 ≤ info
-    return (res..., history=history)
+    return ResultRayleighRitz(;
+      optimizer = optimizer,
+      initialbasisset = basisset,
+      options = options,
+      progress = progress,
+      history = history,
+      getfield(res, :data)...,
+    )
   else
-    return res
+    return ResultRayleighRitz(;
+      getfield(res, :data)...,
+    )
   end
 
 end
@@ -161,31 +115,14 @@ function optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltoni
 end
 
 function solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
-  if 0 < info
-    println("\n# geometric progression\n")
-    println("type \t$(basisset.basistype)")
-    println("range\tr", Subscripts.sub("$(basisset.nₘᵢₙ)"), " - r", Subscripts.sub("$(basisset.nₘₐₓ)"))
-    println("r", Subscripts.sub("$(basisset.nₘᵢₙ)"), " \t", basisset.r₁)
-    println("r", Subscripts.sub("$(basisset.n)"  ), " \t", basisset.rₙ)
-  end
-  solve(hamiltonian, BasisSet(basisset.basis...); perturbation=perturbation, info=info)
+  res = solve(hamiltonian, BasisSet(basisset.basis...); perturbation=perturbation, info=info)
+  return ResultRayleighRitz(;
+    geometricbasisset = basisset,
+    getfield(res, :data)...,
+  )
 end
 
 function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
-
-  # optimizer & initial values
-  if 0 < info && progress
-    println("\n# optimizer\n")
-    println(optimizer)
-    println("P. K. Mogensen, A. N. Riseth, J. Open Source Softw., 3(24), 615 (2018)")
-    println("https://doi.org/10.21105/joss.00615")
-    println("\n# initial geometric progression\n")
-    println("type \t$(basisset.basistype)")
-    println("range\tr", Subscripts.sub("$(basisset.nₘᵢₙ)"), " - r", Subscripts.sub("$(basisset.nₘₐₓ)"))
-    println("r", Subscripts.sub("$(basisset.nₘᵢₙ)"), " \t", basisset.r₁)
-    println("r", Subscripts.sub("$(basisset.n)"  ), " \t", basisset.rₙ)
-    println("\n# optimization log\n")
-  end
 
   # optimize
   history = []
@@ -200,16 +137,10 @@ function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturb
       if 0 ≤ info
         push!(history, (energy=E, parameters=x))
       end
-      if 0 < info && progress
-        Printf.@printf("%.9e  %s\n", E, "[" * join([Printf.@sprintf("%+.3e", x[i]) for i in keys(x)], ", ") *"]")
-      end
-    E
+      E
     catch
       if 0 ≤ info
         push!(history, (energy=Inf, parameters=x))
-      end
-      if 0 < info && progress
-        Printf.@printf("%.9e  %s\n", Inf, "[" * join([Printf.@sprintf("%+.3e", x[i]) for i in keys(x)], ", ") *"]")
       end
       Inf
     end,
@@ -221,11 +152,173 @@ function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturb
   # final results
   res = solve(hamiltonian, GeometricBasisSet(basisset.basistype, res.minimizer..., basisset.n, nₘₐₓ=basisset.nₘₐₓ, nₘᵢₙ=basisset.nₘᵢₙ); perturbation=perturbation, info=info)
   if 0 ≤ info
-    return (res..., history=history)
+    return ResultRayleighRitz(;
+      optimizer = optimizer,
+      initialbasisset = BasisSet(basisset.basis...),
+      initialgeometricbasisset = basisset,
+      options = options,
+      progress = progress,
+      history = history,
+      getfield(res, :data)...,
+    )
   else
-    return res
+    return ResultRayleighRitz(;
+      getfield(res, :data)...,
+    )
   end
 
+end
+
+# result
+
+struct ResultRayleighRitz
+  data::Any
+  ResultRayleighRitz(; args...) = new(NamedTuple(Dict(args)))
+end
+
+Base.getproperty(result::ResultRayleighRitz, symbol::Symbol) = Base.getproperty(getfield(result,:data), symbol)
+Base.haskey(result::ResultRayleighRitz, symbol::Symbol) = Base.haskey(getfield(result,:data), symbol)
+Base.show(io::IO, result::ResultRayleighRitz) = print(io, Base.string(result))
+
+function Base.string(result::ResultRayleighRitz)
+  text = string(typeof(result), ":\n\n")
+  if haskey(result, :info)
+    # info > 0
+    # method
+    text *= "# method\n\n"
+    text *= "Rayleigh-Ritz method with $(typeof(result.basisset[1]))\n"
+    text *= "J. Thijssen, Computational Physics 2nd Edition (2013)\n"
+    text *= "https://doi.org/10.1017/CBO9781139171397\n"
+    # optimization
+    if haskey(result, :optimizer) && 0 < result.info
+      text *= "\n# optimizer\n\n"
+      text *= string(result.optimizer) * "\n"
+      text *= "P. K. Mogensen, A. N. Riseth, J. Open Source Softw., 3(24), 615 (2018)\n"
+      text *= "https://doi.org/10.21105/joss.00615\n"
+      if haskey(result, :geometricbasisset)
+        # initial geometric progression
+        text *= "\n# initial geometric progression\n\n"
+        text *= "type \t$(result.initialgeometricbasisset.basistype)\n"
+        text *= string("range\tr", Subscripts.sub("$(result.initialgeometricbasisset.nₘᵢₙ)"), " - r", Subscripts.sub("$(result.initialgeometricbasisset.nₘₐₓ)"), "\n")
+        text *= string("r", Subscripts.sub("$(result.initialgeometricbasisset.nₘᵢₙ)"), " \t", result.initialgeometricbasisset.r₁, "\n")
+        text *= string("r", Subscripts.sub("$(result.initialgeometricbasisset.n)"  ), " \t", result.initialgeometricbasisset.rₙ, "\n")
+      else
+        # initial basis function
+        text *= "\n# initial basis function\n\n"
+        for n in 1:result.nₘₐₓ
+          text *= Printf.@sprintf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), result.initialbasisset[n])
+        end
+      end
+    end
+    # optimization log
+    if haskey(result, :optimizer) && 0 < result.info && result.progress
+      text *= "\n# optimization log\n\n"
+      for (E, x) in result.history
+        if isinf(E)
+          text *= Printf.@sprintf("%+.9e              %s\n", E, "[" * join([Printf.@sprintf("%+.3e", x[i]) for i in keys(x)], ", ") *"]")
+        else
+          text *= Printf.@sprintf("%+.9e  %s\n", E, "[" * join([Printf.@sprintf("%+.3e", x[i]) for i in keys(x)], ", ") *"]")
+        end
+      end
+    end
+    # geometric progression
+    if haskey(result, :geometricbasisset) && 0 < result.info
+      if haskey(result, :optimizer)
+        text *= "\n# optimized geometric progression\n\n"
+      else
+        text *= "\n# geometric progression\n\n"
+      end
+      text *= "type \t$(result.geometricbasisset.basistype)\n"
+      text *= string("range\tr", Subscripts.sub("$(result.geometricbasisset.nₘᵢₙ)"), " - r", Subscripts.sub("$(result.geometricbasisset.nₘₐₓ)"), "\n")
+      text *= string("r", Subscripts.sub("$(result.geometricbasisset.nₘᵢₙ)"), " \t", result.geometricbasisset.r₁, "\n")
+      text *= string("r", Subscripts.sub("$(result.geometricbasisset.n)"  ), " \t", result.geometricbasisset.rₙ, "\n")
+    end
+    # basis set
+    if haskey(result, :optimizer) && !haskey(result, :geometricbasisset)
+      text *= "\n# optimized basis function\n\n"
+    else
+      text *= "\n# basis function\n\n"
+    end
+    for n in 1:result.nₘₐₓ
+      text *= Printf.@sprintf("φ%s(r) = TwoBody.φ(%s, r)\n", Subscripts.sub("$n"), result.basisset[n])
+    end
+    # eigenfunction
+    text *= "\n# eigenfunction\n\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= Printf.@sprintf("ψ%s(r) = ", Subscripts.sub("$n"))
+      if result.nₘₐₓ > 5
+        text *= "( "
+      end
+      ncol = 5
+      if mod(result.nₘₐₓ,5) == 0
+        ncol = 5
+      elseif mod(result.nₘₐₓ,4) == 0
+        ncol = 4
+      elseif mod(result.nₘₐₓ,3) == 0
+        ncol = 3
+      end
+      for i in 1:result.nₘₐₓ
+        text *= Printf.@sprintf("%s %.6fφ%s(r) ", result.C[i,n]<0 ? "-" : "+", abs(result.C[i,n]), Subscripts.sub("$i"))
+        if result.nₘₐₓ > 5
+          if result.nₘₐₓ == i
+            text *= ")"
+          elseif mod(i,ncol) == 0
+            text *= "\n           "
+          end
+        end
+      end
+      text *= "\n"
+    end
+    # eigenvalue
+    text *= "\n# eigenvalue\n\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= Printf.@sprintf("E%s = %s\n", Subscripts.sub("$n"), "$(result.E[n])")
+    end
+    # verification
+    text *= "\n# verification\n"
+    # norm
+    text *= "\nn \tnorm, <ψₙ|ψₙ> = cₙ' * S * cₙ = 1\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= string("$n\t", result.expectation[:S][n], "\n")
+    end
+    # ill-conditioned
+    text *= "\nn \till-conditioned, |<ψₙ|H|ψₙ> - E| = |cₙ' * H * cₙ - E| = 0\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= string("$n\t", abs(result.expectation[:0][n]), "\n")
+    end
+    # expectation value
+    text *= "\n# expectation value\n"
+    # hamiltonian
+    text *= "\nn \thamiltonian, <ψₙ|H|ψₙ> = cₙ' * H * cₙ\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= string("$n\t", result.expectation[:H][n], "\n")
+    end
+    # perturbation
+    if !isempty(result.perturbation.terms)
+      text *= "\nn \tperturbation\n"
+      for n in 1:min(result.nₘₐₓ, result.info)
+        text *= string("$n\t", result.expectation[:perturbation][n], "\n")
+      end
+      text *= "\nn \thamiltonian + perturbation\n"
+      for n in 1:min(result.nₘₐₓ, result.info)
+        text *= string("$n\t", result.expectation[:H][n] + result.expectation[:perturbation][n], "\n")
+      end
+    end
+    # each term
+    for term in [result.hamiltonian.terms..., result.perturbation.terms...]
+      text *= "\nn \texpectation value of $(term)\n"
+      for n in 1:min(result.nₘₐₓ, result.info)
+        text *= string("$n\t", result.expectation[term][n], "\n")
+      end
+    end
+    # end
+    return text
+  else
+    # info == 0
+    text = "E[1]: $(result.E[1])"
+    return text
+  end
+  return result
 end
 
 # element
@@ -282,6 +375,17 @@ function matrix(basisset::BasisSet)
     end
   end
   return LinearAlgebra.Symmetric(S)
+end
+
+function matrix(operator::Operator, basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  M = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      M[i,j] = element(operator, basisset.basis[i], basisset.basis[j])
+    end
+  end
+  return LinearAlgebra.Symmetric(M)
 end
 
 function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
