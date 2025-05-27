@@ -17,7 +17,7 @@
   println("4π×∫|ψ(r)|²r²dr = 1")
   println("  i\tnumerical  \tanalytical")
   for i in 1:res.nₘₐₓ
-    ψ(r) = res.ψ[i](r)
+    ψ(r) = TwoBody.ψ(res, r, n=i)
     numerical  = 4π*quadgk(r -> r^2 * abs(ψ(r))^2, 0, Inf, rtol=1e-12, maxevals=10^7)[1]
     analytical = 1
     error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
@@ -63,7 +63,7 @@
   println("ψ(r)")
   println("  r\tnumerical  \tanalytical")
   for r in 0.2:0.1:2.0
-    numerical  = abs(res.ψ[1](r))
+    numerical  = abs(TwoBody.ψ(res, r, n=1))
     analytical = abs(Antique.ψ(HA, r, 0, 0))
     error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
     acceptance = error < 1e-2
