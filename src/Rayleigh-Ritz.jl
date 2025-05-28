@@ -337,6 +337,43 @@ function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturb
 
 end
 
+# matrix
+
+function matrix(basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  # S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  S = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      S[i,j] = element(basisset.basis[i], basisset.basis[j])
+    end
+  end
+  return LinearAlgebra.Symmetric(S)
+end
+
+function matrix(operator::Operator, basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  M = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      M[i,j] = element(operator, basisset.basis[i], basisset.basis[j])
+    end
+  end
+  return LinearAlgebra.Symmetric(M)
+end
+
+function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
+  nₘₐₓ = length(basisset.basis)
+  # H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
+  H = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
+  for j in 1:nₘₐₓ
+    for i in 1:j
+      H[i,j] = element(hamiltonian, basisset.basis[i], basisset.basis[j])
+    end
+  end
+  return LinearAlgebra.Symmetric(H)
+end
+
 # element
 
 function element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -377,43 +414,6 @@ end
 
 function element(o::Hamiltonian, B1::Basis, B2::Basis)
   return sum(element(term, B1, B2) for term in o.terms)
-end
-
-# matrix
-
-function matrix(basisset::BasisSet)
-  nₘₐₓ = length(basisset.basis)
-  # S = [element(basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-  S = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
-  for j in 1:nₘₐₓ
-    for i in 1:j
-      S[i,j] = element(basisset.basis[i], basisset.basis[j])
-    end
-  end
-  return LinearAlgebra.Symmetric(S)
-end
-
-function matrix(operator::Operator, basisset::BasisSet)
-  nₘₐₓ = length(basisset.basis)
-  M = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
-  for j in 1:nₘₐₓ
-    for i in 1:j
-      M[i,j] = element(operator, basisset.basis[i], basisset.basis[j])
-    end
-  end
-  return LinearAlgebra.Symmetric(M)
-end
-
-function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
-  nₘₐₓ = length(basisset.basis)
-  # H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-  H = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
-  for j in 1:nₘₐₓ
-    for i in 1:j
-      H[i,j] = element(hamiltonian, basisset.basis[i], basisset.basis[j])
-    end
-  end
-  return LinearAlgebra.Symmetric(H)
 end
 
 # docstring
@@ -463,6 +463,27 @@ This function minimizes the energy by optimizing $r_1$ and $r_n$ using Optim.jl.
 \frac{\partial E}{\partial r_1} = \frac{\partial E}{\partial r_n} = 0
 ```
 """ optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+
+@doc raw"""
+`matrix(basisset::BasisSet)`
+
+This function returns the overlap matrix $\pmb{S}$. The element is written as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``.
+""" matrix(basisset::BasisSet)
+
+@doc raw"""
+`matrix(operator::Operator, basisset::BasisSet)`
+
+!!! note
+  This function is used for the expectation values and is not used in computing the Hamiltonian matrix.
+
+This function returns the matrix corresponding to the operator in the given basis set. The element is written as ``O_{ij} = \langle \phi_{i} | \hat{o} | \phi_{j} \rangle``.
+""" matrix(operator::Operator, basisset::BasisSet)
+
+@doc raw"""
+`matrix(hamiltonian::Hamiltonian, basisset::BasisSet)`
+
+This function returns the Hamiltonian matrix $\pmb{H}$. The element is written as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle``.
+""" matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
 
 @doc raw"""
 `element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
@@ -819,24 +840,3 @@ Integral Formula:
 \end{aligned}
 ```
 """ element(o::Hamiltonian, B1::Basis, B2::Basis)
-
-@doc raw"""
-`matrix(basisset::BasisSet)`
-
-This function returns the overlap matrix $\pmb{S}$. The element is written as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``.
-""" matrix(basisset::BasisSet)
-
-@doc raw"""
-`matrix(operator::Operator, basisset::BasisSet)`
-
-!!! note
-  This function is used for the expectation values and is not used in computing the Hamiltonian matrix.
-
-This function returns the matrix corresponding to the operator in the given basis set. The element is written as ``O_{ij} = \langle \phi_{i} | \hat{o} | \phi_{j} \rangle``.
-""" matrix(operator::Operator, basisset::BasisSet)
-
-@doc raw"""
-`matrix(hamiltonian::Hamiltonian, basisset::BasisSet)`
-
-This function returns the Hamiltonian matrix $\pmb{H}$. The element is written as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle``.
-""" matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
