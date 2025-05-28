@@ -11,7 +11,9 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://ohno.github.io/TwoBody.jl",
-        assets=String[],
+        assets=String[
+            "./assets/logo.ico",
+        ],
     ),
     pages=[
         "Home" => "index.md",
