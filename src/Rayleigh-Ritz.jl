@@ -829,6 +829,9 @@ This function returns the overlap matrix $\pmb{S}$. The element is written as ``
 @doc raw"""
 `matrix(operator::Operator, basisset::BasisSet)`
 
+!!! note
+  This function is used for the expectation values and is not used in computing the Hamiltonian matrix.
+
 This function returns the matrix corresponding to the operator in the given basis set. The element is written as ``O_{ij} = \langle \phi_{i} | \hat{o} | \phi_{j} \rangle``.
 """ matrix(operator::Operator, basisset::BasisSet)
 
