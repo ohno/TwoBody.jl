@@ -80,7 +80,7 @@ Analytical solutions are implemented in [Antique.jl](https://ohno.github.io/Anti
 using TwoBody
 H = Hamiltonian(NonRelativisticKinetic(1,1), CoulombPotential(-1))
 BS = GeometricBasisSet(SimpleGaussianBasis, 0.1, 80.0, 20)
-res = solve(H, BS, info=0)
+res = solve(H, BS)
 
 # benchmark
 import Antique
@@ -115,7 +115,7 @@ for n in 1:4
       0, [0.6, 0.2, 0.11, 0.07][n],
     )
   )
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(res.ψ[n](r))^2, label="TwoBody.jl")
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(TwoBody.ψ(res,r,n=n))^2, label="TwoBody.jl")
   lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(HA,r,0,0,n=n))^2, label="Antique.jl", color=:black, linestyle=:dash)
   axislegend(axis, "n = $n", position=:rt, framevisible=false)
 end
@@ -134,7 +134,7 @@ Analytical solutions are implemented in [spherical oscillator](https://ohno.gith
 using TwoBody
 H = Hamiltonian(NonRelativisticKinetic(1,1), PowerLawPotential(coefficient=1/2,exponent=2))
 BS = GeometricBasisSet(SimpleGaussianBasis, 1.0, 10.0, 20)
-res = solve(H, BS, info=0)
+res = solve(H, BS)
 
 # benchmark
 import Antique
@@ -169,7 +169,7 @@ for n in 1:4
       0, [0.90, 0.75, 0.70, 0.65][n],
     )
   )
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(res.ψ[n](r))^2, label="TwoBody.jl")
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(TwoBody.ψ(res,r,n=n))^2, label="TwoBody.jl")
   lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(SO,r,0,0,n=n-1))^2, label="Antique.jl", color=:black, linestyle=:dash)
   axislegend(axis, "n = $(n-1)", position=:rt, framevisible=false)
 end
@@ -211,6 +211,7 @@ TwoBody.ContractedBasis
 
 ```@docs; canonical=false
 matrix(basisset::BasisSet)
+matrix(operator::Operator, basisset::BasisSet)
 matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
 ```
 
